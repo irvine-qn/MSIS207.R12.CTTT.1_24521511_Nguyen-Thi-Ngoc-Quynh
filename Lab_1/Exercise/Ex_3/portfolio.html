@@ -20,6 +20,7 @@
         dùng.
       </p>
     </section>
+    
     <article class="project-card" data-category="frontend">
       <header class="card-header">
         <h3>Distributed State Engine</h3>
@@ -30,5 +31,22 @@
         <a href="#" aria-label="View State Engine repository">Source Code</a>
       </footer>
     </article>
+    <!-- HTML -->
+    <button id="theme-toggle" aria-pressed="false" aria-label="Đổi giao diện">
+      <span id="theme-icon">🌙</span>
+    </button>
+
+    <!-- JavaScript -->
+    <script>
+      const toggleBtn = document.getElementById("theme-toggle");
+      const icon = document.getElementById("theme-icon");
+
+      toggleBtn.addEventListener("click", () => {
+        const isDark = toggleBtn.getAttribute("aria-pressed") === "true";
+        toggleBtn.setAttribute("aria-pressed", !isDark);
+        document.body.classList.toggle("dark-theme", !isDark);
+        icon.textContent = !isDark ? "☀️" : "🌙";
+      });
+    </script>
   </body>
 </html>
