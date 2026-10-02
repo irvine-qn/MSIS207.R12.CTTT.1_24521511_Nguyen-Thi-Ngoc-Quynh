@@ -20,7 +20,33 @@
         dùng.
       </p>
     </section>
-    
+
+    <!-- HTML -->
+    <section class="skills-matrix">
+      <h2>Kỹ năng</h2>
+      <div class="grid-container">
+        <span class="badge">TypeScript</span>
+        <span class="badge">HTML5 / CSS3</span>
+        <span class="badge">React</span>
+        <span class="badge">Node.js</span>
+      </div>
+    </section>
+
+    <!-- CSS -->
+    <style>
+      .grid-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 12px;
+      }
+      .badge {
+        padding: 8px 12px;
+        background-color: #e2e8f0;
+        border-radius: 6px;
+        text-align: center;
+      }
+    </style>
+
     <article class="project-card" data-category="frontend">
       <header class="card-header">
         <h3>Distributed State Engine</h3>
