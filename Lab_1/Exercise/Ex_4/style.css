@@ -202,3 +202,84 @@ body {
 .empty-button:hover {
   background-color: #d1d5db;
 }
+.error-container {
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+
+  justify-content: center;
+  align-items: center;
+
+  text-align: center;
+
+  padding: 30px;
+}
+
+/* Icon cảnh báo */
+.error-icon {
+  width: 64px;
+  height: 64px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  margin-bottom: 16px;
+
+  border-radius: 50%;
+
+  background-color: #fee2e2;
+
+  font-size: 32px;
+}
+
+/* Tiêu đề */
+.error-container h2 {
+  margin: 0 0 10px;
+
+  font-size: 24px;
+
+  color: #b91c1c;
+}
+
+/* Thông báo lỗi */
+.error-container p {
+  margin: 0 0 20px;
+
+  font-size: 16px;
+
+  color: #6b7280;
+}
+
+/* Nút Retry */
+.retry-button {
+  padding: 10px 20px;
+
+  border: none;
+  border-radius: 8px;
+
+  background-color: #dc2626;
+  color: white;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+/* Hover */
+.retry-button:hover {
+  background-color: #b91c1c;
+}
+
+/* Khi sử dụng bàn phím */
+.retry-button:focus-visible {
+  outline: 3px solid #fca5a5;
+  outline-offset: 3px;
+}
+
+/* Khi nhấn nút */
+.retry-button:active {
+  transform: scale(0.98);
+}
