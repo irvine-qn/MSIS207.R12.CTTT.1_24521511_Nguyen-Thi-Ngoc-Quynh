@@ -37,3 +37,112 @@ body {
     background-position: 200% 0;
   }
 }
+
+.live-data-container {
+  width: 100%;
+  display: grid;
+
+  /* Tự động điều chỉnh số cột */
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+
+  gap: 20px;
+}
+
+/* Card */
+.data-card {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+
+  border: 1px solid #e5e7eb;
+
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+/* Hiệu ứng khi hover */
+.data-card:hover {
+  transform: translateY(-3px);
+
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Tên dữ liệu */
+.data-card h3 {
+  margin: 0 0 10px;
+  font-size: 20px;
+  color: #1f2937;
+}
+
+/* Giá trị */
+.price {
+  margin: 0 0 16px;
+
+  font-size: 24px;
+  font-weight: bold;
+
+  color: #111827;
+}
+
+/*
+    Các badge trong card
+    Sử dụng Flexbox
+*/
+.badges {
+  display: flex;
+
+  /* Các badge nằm ngang */
+  flex-direction: row;
+
+  /* Khoảng cách giữa các badge */
+  gap: 8px;
+
+  /* Cho phép xuống dòng */
+  flex-wrap: wrap;
+
+  /* Căn chỉnh */
+  align-items: center;
+}
+
+/* Badge */
+.badge {
+  padding: 5px 10px;
+
+  border-radius: 20px;
+
+  background-color: #f3f4f6;
+
+  color: #374151;
+
+  font-size: 13px;
+  font-weight: 500;
+
+  white-space: nowrap;
+}
+
+/* Badge Live */
+.badge-green {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+/* Badge Crypto */
+.badge-blue {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+/* Badge Stock */
+.badge-purple {
+  background-color: #ede9fe;
+  color: #6d28d9;
+}
+
+/* Badge Updating */
+.badge-orange {
+  background-color: #ffedd5;
+  color: #c2410c;
+}
