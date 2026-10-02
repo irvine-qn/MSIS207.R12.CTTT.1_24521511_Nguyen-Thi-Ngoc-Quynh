@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,13 +9,13 @@
   <body>
     <header>
       <h1>Portfolio</h1>
-      <button>Toggle Theme</button>
+      <button id="theme-toggle" aria-label="Toggle Theme">Toggle Theme</button>
     </header>
 
-    <main>
-      <section>Project A</section>
-      <section>Project B</section>
-      <section>Project C</section>
+    <main class="grid-container">
+      <section class="card">Project A</section>
+      <section class="card">Project B</section>
+      <section class="card">Project C</section>
     </main>
   </body>
 </html>

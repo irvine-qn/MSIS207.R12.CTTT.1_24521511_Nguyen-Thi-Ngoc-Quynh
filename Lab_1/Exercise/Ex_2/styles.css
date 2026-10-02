@@ -14,7 +14,9 @@
 }
 
 /* Modern CSS Reset */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -26,4 +28,27 @@ body {
   font-family: var(--font-main);
   min-height: 100vh;
   overflow-x: hidden; /* Ngăn cuộn ngang */
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.card {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--text-primary);
+  padding: 1.5rem;
+  border-radius: 8px;
+}
+
+/* Hỗ trợ bàn phím (Focus outline) */
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid var(--accent-color);
+  outline-offset: 2px;
 }
