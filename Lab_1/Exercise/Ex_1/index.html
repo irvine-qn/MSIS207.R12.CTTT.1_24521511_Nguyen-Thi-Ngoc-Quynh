@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Semantic Landmark Tree</title>
+</head>
+<body>
+
+    <!-- STEP 3: Accessible Skip-Link -->
+    <a href="#main">Skip to Content</a>
+
+    <!-- STEP 2: Landmark Hierarchy (KHÔNG DÙNG THẺ DIV) -->
+    <header>
+        <h1>Tên Website / Logo</h1>
+        <nav aria-label="Menu chính">
+            <ul>
+                <li><a href="#home">Trang chủ</a></li>
+                <li><a href="#about">Giới thiệu</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main id="main" tabindex="-1">
+        <section>
+            <h2>Nội dung chính</h2>
+            <p>Đây là phần nội dung chính của trang web.</p>
+        </section>
+    </main>
+
+    <aside>
+        <h2>Thông tin bổ sung</h2>
+        <p>Thanh bên chứa các liên kết hoặc nội dung phụ.</p>
+    </aside>
+
+    <footer>
+        <p>© 2026 Bản quyền thuộc về dự án.</p>
+    </footer>
+
+</body>
+</html>
