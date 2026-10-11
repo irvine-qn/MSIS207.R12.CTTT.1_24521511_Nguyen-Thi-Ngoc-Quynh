@@ -6,7 +6,7 @@
   Cập nhật skeleton portfolio không bao gồm css hay javascript
 - Design và điều chỉnh lại UI
 - Chỉnh sửa các chức năng của file javascript nếu có
-- Check constrast của nội dung
+- Check contrast của nội dung
 - Phân tách landmark nội dung phù hợp
 - Kiểm tra các vấn đề về accessibility
 - Sửa lỗi landmark và contrast
