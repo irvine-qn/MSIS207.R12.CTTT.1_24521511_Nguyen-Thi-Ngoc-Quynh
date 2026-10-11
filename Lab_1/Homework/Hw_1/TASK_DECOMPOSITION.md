@@ -9,9 +9,9 @@
 - Check constrast của nội dung
 - Phân tách landmark nội dung phù hợp
 - Kiểm tra các vấn đề về accessibility
-- Sửa lỗi landmard và contrast
+- Sửa lỗi landmark và contrast
 - Chốt lại hoàn thiện M1 bằng commit:
-  `fix(ally): constrast & landmarks`
+  `fix(ally): contrast & landmarks`
 
 ## M2: Focus trap audit -> Commit 'fix(nav): keyboard trap prevention'
 

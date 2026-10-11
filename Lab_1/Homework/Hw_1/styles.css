@@ -6,7 +6,7 @@
   --text-sub: #334155;
   --border-color: #cbd5e1;
 
-  --rainbow-red: #dc2626;
+  --rainbow-red: #b91c1c;
   --rainbow-orange: #ea580c;
   --rainbow-yellow: #b45309;
   --rainbow-green: #15803d;
@@ -77,15 +77,6 @@ article {
 article:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
-}
-
-article::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
 }
 
 article h3 {
@@ -212,25 +203,7 @@ header {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 1rem 2rem;
-  isolation: isolate;
-}
-
-header::before {
-  position: absolute;
-  inset: 0 0 auto;
-  height: 6px;
-  background: linear-gradient(
-    90deg,
-    var(--rainbow-red),
-    var(--rainbow-orange),
-    var(--rainbow-yellow),
-    var(--rainbow-green),
-    var(--rainbow-blue),
-    var(--rainbow-indigo),
-    var(--rainbow-violet)
-  );
-  content: "";
-  pointer-events: none;
+  border-top: 6px solid var(--rainbow-blue);
 }
 
 .header-container {
@@ -305,58 +278,59 @@ main > section > h2 {
 main > section > article {
   min-width: 0;
   border-color: #e2e8f0;
+  border-top-width: 4px;
 }
 
-main > section > article:nth-of-type(1)::before {
-  background-color: var(--rainbow-red);
+main > section > article:nth-of-type(1) {
+  border-top-color: var(--rainbow-red);
 }
 
-#education > article:nth-of-type(2)::before {
-  background-color: var(--rainbow-orange);
+#education > article:nth-of-type(2) {
+  border-top-color: var(--rainbow-orange);
 }
 
-#key-projects > article:nth-of-type(1)::before {
-  background-color: var(--rainbow-green);
+#key-projects > article:nth-of-type(1) {
+  border-top-color: var(--rainbow-green);
 }
 
-#key-projects > article:nth-of-type(2)::before {
-  background-color: var(--rainbow-blue);
+#key-projects > article:nth-of-type(2) {
+  border-top-color: var(--rainbow-blue);
 }
 
-#key-projects > article:nth-of-type(3)::before {
-  background-color: var(--rainbow-indigo);
+#key-projects > article:nth-of-type(3) {
+  border-top-color: var(--rainbow-indigo);
 }
 
-#key-projects > article:nth-of-type(4)::before {
-  background-color: var(--rainbow-violet);
+#key-projects > article:nth-of-type(4) {
+  border-top-color: var(--rainbow-violet);
 }
 
-#extracurricular > article:nth-of-type(1)::before {
-  background-color: var(--rainbow-blue);
+#extracurricular > article:nth-of-type(1) {
+  border-top-color: var(--rainbow-blue);
 }
 
-#extracurricular > article:nth-of-type(2)::before {
-  background-color: var(--rainbow-indigo);
+#extracurricular > article:nth-of-type(2) {
+  border-top-color: var(--rainbow-indigo);
 }
 
-#extracurricular > article:nth-of-type(3)::before {
-  background-color: var(--rainbow-violet);
+#extracurricular > article:nth-of-type(3) {
+  border-top-color: var(--rainbow-violet);
 }
 
-#extracurricular > article:nth-of-type(4)::before {
-  background-color: var(--rainbow-red);
+#extracurricular > article:nth-of-type(4) {
+  border-top-color: var(--rainbow-red);
 }
 
 #technical-skills {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-#technical-skills > article:nth-of-type(2)::before {
-  background-color: var(--rainbow-green);
+#technical-skills > article:nth-of-type(2) {
+  border-top-color: var(--rainbow-green);
 }
 
-#technical-skills > article:nth-of-type(3)::before {
-  background-color: var(--rainbow-violet);
+#technical-skills > article:nth-of-type(3) {
+  border-top-color: var(--rainbow-violet);
 }
 
 main > section > article:hover {
@@ -372,6 +346,36 @@ footer {
   font-size: 0.9rem;
   font-weight: 700;
   text-align: center;
+}
+
+.skip-link {
+  position: absolute;
+  top: -4rem;
+  left: 1rem;
+  z-index: 100;
+  padding: 0.65rem 1rem;
+  border-radius: 0 0 8px 8px;
+  background-color: var(--rainbow-blue);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  transition: none !important;
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: var(--focus-outline);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
 }
 
 body > hr {
