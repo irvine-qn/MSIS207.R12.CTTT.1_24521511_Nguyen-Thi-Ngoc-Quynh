@@ -1,3 +1,7 @@
-import { initKeyboardHandler } from "./keyboardHandler.js";
+import {
+  initKeyboardHandler,
+  initPadClickHandler,
+} from "./keyboardHandler.js";
 
 initKeyboardHandler();
+initPadClickHandler();
