@@ -1,26 +1,53 @@
-const drumPads = document.querySelectorAll(".key");
+class AudioEngine {
+  constructor() {
+    this.soundRegistry = new Map();
+  }
 
-drumPads.forEach((pad) => {
-  pad.addEventListener("click", () => {
-    playVisualEffect(pad);
-  });
-});
+  /**
+   * Registers a sound identifier with its corresponding audio file path.
+   * @param {string} soundName - The data-sound identifier (e.g., 'kick', 'snare').
+   * @param {string} filePath - Path to the audio asset.
+   */
+  registerSound(soundName, filePath) {
+    const audio = new Audio(filePath);
+    audio.preload = "auto";
 
-document.addEventListener("keydown", (event) => {
-  if (event.repeat) return;
+    // Graceful error handling for missing or unplayable assets
+    audio.onerror = () => {
+      console.warn(
+        `AudioEngine: Failed to load asset for sound "${soundName}" at path "${filePath}".`,
+      );
+    };
 
-  const keyCode = event.keyCode;
-  const pad = document.querySelector(`.key[data-key="${keyCode}"]`);
+    this.soundRegistry.set(soundName, audio);
+  }
 
-  if (!pad) return;
+  /**
+   * Triggers playback for a given sound identifier.
+   * Supports true polyphony by cloning the base audio element, allowing
+   * overlapping playback and rapid re-triggering without cutting off.
+   * @param {string} soundName - The data-sound identifier to play.
+   */
+  playSound(soundName) {
+    const baseAudio = this.soundRegistry.get(soundName);
 
-  playVisualEffect(pad);
-});
+    if (!baseAudio) {
+      console.warn(
+        `AudioEngine: No sound registered for identifier "${soundName}".`,
+      );
+      return;
+    }
 
-function playVisualEffect(pad) {
-  pad.classList.add("playing");
+    const soundClone = baseAudio.cloneNode();
+    soundClone.currentTime = 0;
 
-  setTimeout(() => {
-    pad.classList.remove("playing");
-  }, 120);
+    soundClone.play().catch((error) => {
+      console.error(
+        `AudioEngine: Playback error for sound "${soundName}".`,
+        error,
+      );
+    });
+  }
 }
+
+export const audioEngine = new AudioEngine();
