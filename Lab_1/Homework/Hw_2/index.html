@@ -7,51 +7,113 @@
     <title>Drum Kit</title>
   </head>
   <body>
-    <div class="drum-kit">
-      <div class="key" data-key="65" data-sound="kick">
-        <kbd>A</kbd>
-        <span class="sound">Kick</span>
+    <main class="container">
+      <h1>Drum Kit</h1>
+
+      <div class="drum-kit">
+        <button
+          type="button"
+          class="key"
+          data-key="65"
+          data-sound="kick"
+          aria-label="Kick drum, A key"
+        >
+          <kbd>A</kbd>
+          <span class="sound">Kick</span>
+        </button>
+
+        <button
+          type="button"
+          class="key"
+          data-key="83"
+          data-sound="snare"
+          aria-label="Snare drum, S key"
+        >
+          <kbd>S</kbd>
+          <span class="sound">Snare</span>
+        </button>
+
+        <button
+          type="button"
+          class="key"
+          data-key="68"
+          data-sound="hihat"
+          aria-label="Closed hi-hat, D key"
+        >
+          <kbd>D</kbd>
+          <span class="sound">Hi-Hat</span>
+        </button>
+
+        <button
+          type="button"
+          class="key"
+          data-key="70"
+          data-sound="clap"
+          aria-label="Clap, F key"
+        >
+          <kbd>F</kbd>
+          <span class="sound">Clap</span>
+        </button>
+
+        <button
+          type="button"
+          class="key"
+          data-key="71"
+          data-sound="openhat"
+          aria-label="Open hi-hat, G key"
+        >
+          <kbd>G</kbd>
+          <span class="sound">Open Hat</span>
+        </button>
+
+        <button
+          type="button"
+          class="key"
+          data-key="72"
+          data-sound="boom"
+          aria-label="Boom, H key"
+        >
+          <kbd>H</kbd>
+          <span class="sound">Boom</span>
+        </button>
+
+        <button
+          type="button"
+          class="key"
+          data-key="74"
+          data-sound="ride"
+          aria-label="Ride cymbal, J key"
+        >
+          <kbd>J</kbd>
+          <span class="sound">Ride</span>
+        </button>
+
+        <button
+          type="button"
+          class="key"
+          data-key="75"
+          data-sound="tom"
+          aria-label="Tom drum, K key"
+        >
+          <kbd>K</kbd>
+          <span class="sound">Tom</span>
+        </button>
+
+        <button
+          type="button"
+          class="key"
+          data-key="76"
+          data-sound="tink"
+          aria-label="Tink percussion, L key"
+        >
+          <kbd>L</kbd>
+          <span class="sound">Tink</span>
+        </button>
       </div>
 
-      <div class="key" data-key="83" data-sound="snare">
-        <kbd>S</kbd>
-        <span class="sound">Snare</span>
-      </div>
-
-      <div class="key" data-key="68" data-sound="hihat">
-        <kbd>D</kbd>
-        <span class="sound">Hi-Hat</span>
-      </div>
-
-      <div class="key" data-key="70" data-sound="clap">
-        <kbd>F</kbd>
-        <span class="sound">Clap</span>
-      </div>
-
-      <div class="key" data-key="71" data-sound="openhat">
-        <kbd>G</kbd>
-        <span class="sound">Open Hat</span>
-      </div>
-
-      <div class="key" data-key="72" data-sound="boom">
-        <kbd>H</kbd>
-        <span class="sound">Boom</span>
-      </div>
-
-      <div class="key" data-key="74" data-sound="ride">
-        <kbd>J</kbd>
-        <span class="sound">Ride</span>
-      </div>
-
-      <div class="key" data-key="75" data-sound="tom">
-        <kbd>K</kbd>
-        <span class="sound">Tom</span>
-      </div>
-
-      <div class="key" data-key="76" data-sound="tink">
-        <kbd>L</kbd>
-        <span class="sound">Tink</span>
-      </div>
-    </div>
+      <p class="hint">
+        Keyboard: A S D F G H J K L
+      </p>
+    </main>
   </body>
 </html>
