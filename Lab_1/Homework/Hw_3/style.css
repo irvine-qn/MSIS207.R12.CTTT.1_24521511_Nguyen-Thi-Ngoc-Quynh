@@ -2,6 +2,9 @@ body {
   font-family: sans-serif;
   text-align: center;
   margin-top: 50px;
+  max-width: 500px;
+  margin: 40px auto;
+  padding: 20px;
 }
 .timer {
   font-size: 2rem;
@@ -11,4 +14,49 @@ body {
 }
 .error {
   color: #dc2626;
+}
+.form-group {
+  margin-bottom: 15px;
+}
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+input,
+textarea {
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+}
+.error-msg {
+  color: #dc2626;
+  font-size: 0.875rem;
+  margin-top: 5px;
+  display: none;
+}
+.alert-box {
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  display: none;
+}
+.alert-success {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+.alert-error {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+button {
+  padding: 10px 15px;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+button:disabled {
+  background-color: #93c3fd;
+  cursor: not-allowed;
 }

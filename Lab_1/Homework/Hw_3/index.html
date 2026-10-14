@@ -9,7 +9,41 @@
     <h1>Event Countdown</h1>
     <div id="timer-display" class="timer">Loading...</div>
     <button id="stop-btn">Stop Timer</button>
+    <h2>Event Hub Submission Form</h2>
 
+    <div id="success-banner" class="alert-box alert-success">
+      Event successfully submitted!
+    </div>
+    <div id="error-banner" class="alert-box alert-error">
+      <span id="error-text">An error occurred.</span>
+      <button id="retry-btn" style="margin-left: 10px; padding: 4px 8px">
+        Retry
+      </button>
+    </div>
+
+    <form id="event-form">
+      <div class="form-group">
+        <label for="eventTitle">Event Title *</label>
+        <input
+          type="text"
+          id="eventTitle"
+          required
+          placeholder="Enter event title (type 'fail' to test error)"
+        />
+        <div id="title-error" class="error-msg">Title is required.</div>
+      </div>
+
+      <div class="form-group">
+        <label for="eventDescription">Description</label>
+        <textarea
+          id="eventDescription"
+          rows="3"
+          placeholder="Enter details..."
+        ></textarea>
+      </div>
+
+      <button type="submit" id="submit-btn">Submit Event</button>
+    </form>
     <script href="main.js"></script>
   </body>
 </html>
