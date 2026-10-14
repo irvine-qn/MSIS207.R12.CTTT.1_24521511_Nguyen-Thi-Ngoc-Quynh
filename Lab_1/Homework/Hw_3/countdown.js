@@ -1,22 +1,41 @@
+// ISO 8601 with an explicit timezone: "Z" or "+hh:mm" / "-hh:mm"
+const ISO_WITH_TZ =
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})$/;
+
 /**
  * @param {string} targetISOString - Target timestamp in ISO 8601 format (e.g., "2030-01-01T00:00:00Z").
  * @param {Function} onTick - Callback function receiving the formatted time object or status messages.
  * @param {Function} onComplete - Callback function triggered when the countdown reaches zero.
- * @returns {Object} An object with a stop() method to clear the interval.
+ * @returns {Object} An object with a stop() method to clear the timer.
  */
 export function startCountdown(targetISOString, onTick, onComplete) {
-  const targetTime = Date.parse(targetISOString);
+  // Reject timestamps without a timezone: they would be parsed as local time
+  const targetTime =
+    typeof targetISOString === "string" && ISO_WITH_TZ.test(targetISOString)
+      ? Date.parse(targetISOString)
+      : NaN;
+
   if (isNaN(targetTime)) {
-    onTick({ error: "Invalid ISO 8601 timestamp provided." });
+    onTick({ error: "Invalid ISO 8601 timestamp (timezone required)." });
     return { stop: () => {} };
   }
 
+  let timerId = null;
+  let stopped = false;
+
+  const stop = () => {
+    stopped = true;
+    clearTimeout(timerId);
+    timerId = null;
+    document.removeEventListener("visibilitychange", onVisibilityChange);
+  };
+
   const updateTimer = () => {
-    const now = Date.now();
-    const difference = targetTime - now;
+    // Remaining time is always recomputed from the clock, so no drift builds up
+    const difference = targetTime - Date.now();
 
     if (difference <= 0) {
-      clearInterval(timerId);
+      stop();
       onComplete({ days: 0, hours: 0, minutes: 0, seconds: 0, expired: true });
       return;
     }
@@ -34,13 +53,20 @@ export function startCountdown(targetISOString, onTick, onComplete) {
       seconds: String(seconds).padStart(2, "0"),
       expired: false,
     });
+
+    // Schedule the next tick right after the next whole-second boundary
+    // so the display never skips or repeats a second
+    clearTimeout(timerId);
+    timerId = setTimeout(updateTimer, (difference % 1000) + 10);
   };
+
+  // Browsers throttle timers in background tabs; resync when the tab returns
+  function onVisibilityChange() {
+    if (!stopped && document.visibilityState === "visible") updateTimer();
+  }
+  document.addEventListener("visibilitychange", onVisibilityChange);
 
   updateTimer();
 
-  const timerId = setInterval(updateTimer, 1000);
-
-  return {
-    stop: () => clearInterval(timerId),
-  };
+  return { stop };
 }

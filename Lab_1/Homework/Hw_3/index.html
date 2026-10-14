@@ -2,35 +2,40 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Drift-Free Countdown Engine</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resilient Event Hub</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <h1>Event Countdown</h1>
-    <div id="timer-display" class="timer">Loading...</div>
-    <button id="stop-btn">Stop Timer</button>
+    <div id="timer-display" class="timer" aria-live="polite">Loading...</div>
+    <button type="button" id="stop-btn">Stop Timer</button>
+
     <h2>Event Hub Submission Form</h2>
 
-    <div id="success-banner" class="alert-box alert-success">
-      Event successfully submitted!
-    </div>
-    <div id="error-banner" class="alert-box alert-error">
-      <span id="error-text">An error occurred.</span>
-      <button id="retry-btn" style="margin-left: 10px; padding: 4px 8px">
-        Retry
+    <div id="success-banner" class="alert-box alert-success" role="status">
+      <span id="success-text">Event successfully submitted!</span>
+      <button type="button" id="new-event-btn" class="inline-btn">
+        Submit another event
       </button>
     </div>
+    <div id="error-banner" class="alert-box alert-error" role="alert">
+      <span id="error-text">An error occurred.</span>
+      <button type="button" id="retry-btn" class="inline-btn">Retry</button>
+    </div>
 
-    <form id="event-form">
+    <!-- novalidate: validation is handled in main.js so every path shows the same messages -->
+    <form id="event-form" novalidate>
       <div class="form-group">
         <label for="eventTitle">Event Title *</label>
         <input
           type="text"
           id="eventTitle"
-          required
+          maxlength="100"
+          autocomplete="off"
           placeholder="Enter event title (type 'fail' to test error)"
         />
-        <div id="title-error" class="error-msg">Title is required.</div>
+        <div id="title-error" class="error-msg" aria-live="polite"></div>
       </div>
 
       <div class="form-group">
@@ -38,12 +43,14 @@
         <textarea
           id="eventDescription"
           rows="3"
+          maxlength="500"
           placeholder="Enter details..."
         ></textarea>
       </div>
 
       <button type="submit" id="submit-btn">Submit Event</button>
     </form>
-    <script href="main.js"></script>
+
+    <script type="module" src="main.js"></script>
   </body>
 </html>

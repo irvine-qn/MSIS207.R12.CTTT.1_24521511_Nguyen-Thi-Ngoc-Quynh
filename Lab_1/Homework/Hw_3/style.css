@@ -1,7 +1,6 @@
 body {
   font-family: sans-serif;
   text-align: center;
-  margin-top: 50px;
   max-width: 500px;
   margin: 40px auto;
   padding: 20px;
@@ -59,4 +58,11 @@ button {
 button:disabled {
   background-color: #93c3fd;
   cursor: not-allowed;
+}
+.inline-btn {
+  margin-left: 10px;
+  padding: 4px 8px;
+}
+input[aria-invalid="true"] {
+  border: 1px solid #dc2626;
 }

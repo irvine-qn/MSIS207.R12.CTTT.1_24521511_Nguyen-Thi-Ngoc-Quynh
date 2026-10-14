@@ -1,8 +1,9 @@
 /**
- * @param {Object} formData
- * @returns {Promise}
+ * Mock API call. A title of "fail" simulates a server error.
+ * @param {{ eventTitle: string, eventDescription: string }} formData
+ * @returns {Promise<{ success: boolean, message: string }>}
  */
-export async function submitEventData(formData) {
+export function submitEventData(formData) {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       if (formData.eventTitle.toLowerCase() === "fail") {
