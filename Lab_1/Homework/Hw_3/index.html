@@ -12,102 +12,64 @@
       <p class="eyebrow">A little something to look forward to</p>
       <h1>Event Countdown</h1>
 
-      <section class="card" aria-labelledby="countdown-heading">
-        <h2 id="countdown-heading">Save the moment</h2>
-        <p class="card-intro">
-          Choose a date and time for your upcoming event. We’ll count down in
-          your device’s local time zone.
-        </p>
-        <form id="countdown-form" class="countdown-form" novalidate>
-          <label for="eventDate">Event date &amp; time</label>
-          <input type="datetime-local" id="eventDate" required />
-          <button type="submit" id="start-btn">Start countdown</button>
-          <small class="timezone-note"
-            >The selected local time is converted to an exact timestamp before
-            counting down.</small
-          >
-        </form>
-        <div
-          id="timer-display"
-          class="timer-message"
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          Pick an event date to start.
-        </div>
-        <button type="button" id="stop-btn" class="button-secondary" disabled>
-          Stop timer
-        </button>
-      </section>
-
       <section class="card" aria-labelledby="form-heading">
-        <h2 id="form-heading">Share your event</h2>
-        <p class="card-intro">Send us the details and we’ll keep them safe.</p>
+        <h2 id="form-heading">Create an event</h2>
+        <p class="card-intro">Add an event and its start time. Each successfully submitted event will appear in your countdown list below.</p>
 
-        <div
-          id="success-banner"
-          class="alert-box alert-success"
-          role="status"
-          aria-live="polite"
-        >
+        <div id="success-banner" class="alert-box alert-success" role="status" aria-live="polite">
           <span id="success-text">Event successfully submitted!</span>
-          <button type="button" id="new-event-btn" class="button-secondary">
-            Submit another event
-          </button>
         </div>
         <div id="error-banner" class="alert-box alert-error" role="alert">
           <span id="error-text">An error occurred.</span>
-          <button type="button" id="retry-btn" class="button-secondary">
-            Retry
-          </button>
+          <button type="button" id="retry-btn" class="button-secondary">Retry</button>
         </div>
 
         <form id="event-form" novalidate>
           <div class="form-group">
-            <label for="eventTitle"
-              >Event title <span aria-hidden="true">*</span></label
-            >
-            <input
-              type="text"
-              id="eventTitle"
-              maxlength="100"
-              autocomplete="off"
-              placeholder="e.g. Spring garden party"
-              aria-describedby="title-error"
-              required
-            />
+            <label for="eventTitle">Event title <span aria-hidden="true">*</span></label>
+            <input type="text" id="eventTitle" maxlength="100" autocomplete="off" placeholder="e.g. Spring garden party" aria-describedby="title-error" required />
             <div id="title-error" class="error-msg" aria-live="polite"></div>
           </div>
           <div class="form-group">
-            <label for="eventDescription"
-              >Description <span class="timezone-note">(optional)</span></label
-            >
-            <textarea
-              id="eventDescription"
-              rows="4"
-              maxlength="500"
-              placeholder="A few lovely details..."
-              aria-describedby="description-error"
-            ></textarea>
-            <div
-              id="description-error"
-              class="error-msg"
-              aria-live="polite"
-            ></div>
+            <label for="eventDescription">Description <span class="timezone-note">(optional)</span></label>
+            <textarea id="eventDescription" rows="3" maxlength="500" placeholder="A few lovely details..." aria-describedby="description-error"></textarea>
+            <div id="description-error" class="error-msg" aria-live="polite"></div>
+          </div>
+          <div class="form-group">
+            <label for="eventDate">Event start date &amp; time <span aria-hidden="true">*</span></label>
+            <input type="datetime-local" id="eventDate" aria-describedby="date-error timezone-hint" required />
+            <div id="date-error" class="error-msg" aria-live="polite"></div>
+            <small id="timezone-hint" class="timezone-note">Time is interpreted in your device’s local time zone.</small>
           </div>
           <div class="button-row">
             <button type="submit" id="submit-btn">Submit event</button>
-            <span
-              id="form-status"
-              class="form-status"
-              role="status"
-              aria-live="polite"
-              >Ready when you are.</span
-            >
+            <span id="form-status" class="form-status" role="status" aria-live="polite">Ready when you are.</span>
           </div>
         </form>
       </section>
+
+      <section id="events-section" class="card events-board" aria-labelledby="events-heading" hidden>
+        <div class="board-heading">
+          <span class="board-kicker">Your event notice board</span>
+          <h2 id="events-heading">Upcoming events</h2>
+          <p class="card-intro">Every event has its own live countdown. Times are shown in your local time zone.</p>
+        </div>
+        <div class="table-wrap">
+          <table class="events-table">
+            <thead>
+              <tr><th scope="col">Event details</th><th scope="col">Date &amp; time</th><th scope="col">Countdown</th></tr>
+            </thead>
+            <tbody id="events-list"></tbody>
+          </table>
+        </div>
+      </section>
     </main>
+    <dialog id="feedback-dialog" class="feedback-dialog" aria-labelledby="feedback-title" aria-describedby="feedback-message">
+      <div id="feedback-icon" class="feedback-icon" aria-hidden="true">✓</div>
+      <h2 id="feedback-title">Event created</h2>
+      <p id="feedback-message">Your event was added to the countdown list.</p>
+      <button type="button" id="feedback-close">Got it</button>
+    </dialog>
     <script type="module" src="main.js"></script>
   </body>
 </html>
