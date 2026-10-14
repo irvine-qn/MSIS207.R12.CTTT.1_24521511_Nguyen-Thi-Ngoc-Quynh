@@ -1,227 +1,236 @@
-import { startCountdown } from "./countdown.js";
+﻿import { startCountdown } from "./countdown.js";
 import { submitEventData } from "./formStateMachine.js";
-
-// ---------- Slice 1: Countdown ----------
-
-const countdownForm = document.getElementById("countdown-form");
-const dateInput = document.getElementById("eventDate");
-const display = document.getElementById("timer-display");
-const stopBtn = document.getElementById("stop-btn");
-
-let timer = null;
-
-function showTimerMessage(message, isError = false) {
-  display.className = isError ? "timer error" : "timer";
-  display.textContent = message;
-}
-
-countdownForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-
-  if (!dateInput.value) {
-    showTimerMessage("Please pick an event date.", true);
-    return;
-  }
-
-  // datetime-local has no timezone: read it as the user's local time,
-  // then convert to a UTC ISO string ("...Z") for the countdown engine
-  const eventDate = new Date(dateInput.value);
-  if (eventDate.getTime() <= Date.now()) {
-    showTimerMessage("Event date must be in the future.", true);
-    return;
-  }
-
-  // Only one countdown at a time: clean up the previous timer first
-  if (timer) timer.stop();
-
-  showTimerMessage("");
-  stopBtn.textContent = "Stop Timer";
-  stopBtn.disabled = false;
-
-  timer = startCountdown(
-    eventDate.toISOString(),
-    (data) => {
-      if (data.error) {
-        showTimerMessage(data.error, true);
-        stopBtn.disabled = true;
-        return;
-      }
-      display.textContent = `${data.days}d : ${data.hours}h : ${data.minutes}m : ${data.seconds}s`;
-    },
-    () => {
-      showTimerMessage("The event has started!");
-      stopBtn.disabled = true;
-    },
-  );
-});
-
-stopBtn.addEventListener("click", () => {
-  if (timer) timer.stop();
-  timer = null;
-  stopBtn.textContent = "Timer Stopped";
-  stopBtn.disabled = true;
-});
-
-// ---------- Slice 2 & 3: State-machine form ----------
 
 const form = document.getElementById("event-form");
 const titleInput = document.getElementById("eventTitle");
 const descInput = document.getElementById("eventDescription");
+const dateInput = document.getElementById("eventDate");
 const submitBtn = document.getElementById("submit-btn");
 const successBanner = document.getElementById("success-banner");
 const successText = document.getElementById("success-text");
-const newEventBtn = document.getElementById("new-event-btn");
 const errorBanner = document.getElementById("error-banner");
 const errorText = document.getElementById("error-text");
 const retryBtn = document.getElementById("retry-btn");
 const titleError = document.getElementById("title-error");
 const descError = document.getElementById("description-error");
+const dateError = document.getElementById("date-error");
+const formStatus = document.getElementById("form-status");
+const eventsSection = document.getElementById("events-section");
+const eventsList = document.getElementById("events-list");
+const feedbackDialog = document.getElementById("feedback-dialog");
+const feedbackIcon = document.getElementById("feedback-icon");
+const feedbackTitle = document.getElementById("feedback-title");
+const feedbackMessage = document.getElementById("feedback-message");
+const feedbackClose = document.getElementById("feedback-close");
 
+let currentState = "idle";
+let requestInFlight = false;
+let retryPayload = null;
 const TITLE_MIN = 3;
 const TITLE_MAX = 100;
 const DESC_MAX = 500;
-
-// Allowed transitions between the four form states
-const TRANSITIONS = {
+const transitions = {
   idle: ["submitting"],
   submitting: ["success", "error"],
-  success: ["idle"],
+  success: ["submitting"],
   error: ["submitting", "idle"],
 };
 
-let currentState = null;
-
-// Normalize input: trim, drop control characters and collapse whitespace.
-// Length is checked in validate() so the user gets a message instead of
-// silent truncation. Output is only ever rendered with textContent.
-function sanitize(value, { multiline = false } = {}) {
-  let text = String(value).normalize("NFC");
+function sanitize(value, multiline = false) {
+  let result = String(value).normalize("NFC");
   if (multiline) {
-    text = text
-      .replace(/\r\n?/g, "\n")
-      .replace(/[\u0000-\u0009\u000B-\u001F\u007F]/g, "")
-      .replace(/[ \t]+/g, " ")
-      .replace(/\n{3,}/g, "\n\n");
+    result = result.replace(/\r\n?/g, "\n").replace(/[\u0000-\u0009\u000B-\u001F\u007F]/g, "").replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n");
   } else {
-    text = text.replace(/[\u0000-\u001F\u007F]/g, "").replace(/\s+/g, " ");
+    result = result.replace(/[\u0000-\u001F\u007F]/g, "").replace(/\s+/g, " ");
   }
-  return text.trim();
+  return result.trim();
 }
 
-// Rules per field: title is required (3-100 chars), description is optional (max 500)
-function validate(title, description) {
-  const errors = { title: "", description: "" };
-  if (!title) errors.title = "Title is required.";
-  else if (title.length < TITLE_MIN)
-    errors.title = `Title must be at least ${TITLE_MIN} characters.`;
-  else if (title.length > TITLE_MAX)
-    errors.title = `Title must be at most ${TITLE_MAX} characters.`;
-
-  if (description.length > DESC_MAX)
-    errors.description = `Description must be at most ${DESC_MAX} characters.`;
-  return errors;
-}
-
-function showFieldError(input, errorEl, message) {
-  errorEl.textContent = message;
-  errorEl.style.display = message ? "block" : "none";
+function showFieldError(input, element, message) {
+  element.textContent = message;
+  element.style.display = message ? "block" : "none";
   input.setAttribute("aria-invalid", message ? "true" : "false");
 }
 
-function setInputsDisabled(disabled) {
-  titleInput.disabled = disabled;
-  descInput.disabled = disabled;
-  submitBtn.disabled = disabled;
-  retryBtn.disabled = disabled;
+function showFeedback(type, title, message) {
+  feedbackDialog.classList.toggle("is-error", type === "error");
+  feedbackIcon.textContent = type === "error" ? "!" : "✓";
+  feedbackTitle.textContent = title;
+  feedbackMessage.textContent = message;
+  if (!feedbackDialog.open) feedbackDialog.showModal();
 }
 
-// State Handler Function
+feedbackClose.addEventListener("click", () => feedbackDialog.close());
+
 function setFormState(state, message = "") {
-  if (currentState !== null && !TRANSITIONS[currentState].includes(state)) {
-    console.warn(`Invalid transition: ${currentState} -> ${state}`);
-    return false;
-  }
+  if (!transitions[currentState].includes(state)) return false;
   currentState = state;
+  const busy = state === "submitting";
+  [titleInput, descInput, dateInput].forEach((input) => { input.disabled = busy; });
+  submitBtn.disabled = busy;
+  retryBtn.disabled = busy;
 
-  switch (state) {
-    case "idle":
-      form.style.display = "block";
-      setInputsDisabled(false);
-      submitBtn.textContent = "Submit Event";
-      successBanner.style.display = "none";
-      errorBanner.style.display = "none";
-      break;
-
-    case "submitting":
-      setInputsDisabled(true);
-      submitBtn.textContent = "Submitting...";
-      errorBanner.style.display = "none";
-      break;
-
-    case "success":
-      form.style.display = "none";
-      successText.textContent = message;
-      successBanner.style.display = "block";
-      errorBanner.style.display = "none";
-      break;
-
-    case "error":
-      setInputsDisabled(false);
-      submitBtn.textContent = "Submit Event";
-      errorText.textContent = message || "Submission failed.";
-      errorBanner.style.display = "block";
-      break;
+  if (state === "idle") {
+    successBanner.style.display = "none";
+    errorBanner.style.display = "none";
+    submitBtn.textContent = "Submit event";
+    formStatus.textContent = "Ready when you are.";
+  } else if (state === "submitting") {
+    successBanner.style.display = "none";
+    errorBanner.style.display = "none";
+    submitBtn.textContent = "Submitting…";
+    formStatus.textContent = "Submitting your event…";
+  } else if (state === "success") {
+    successText.textContent = message;
+    successBanner.style.display = "block";
+    errorBanner.style.display = "none";
+    submitBtn.textContent = "Submit event";
+    formStatus.textContent = "Event added below. You can submit another event.";
+  } else if (state === "error") {
+    errorText.textContent = message || "Submission failed. Please try again.";
+    errorBanner.style.display = "block";
+    submitBtn.textContent = "Submit event";
+    formStatus.textContent = "Your event was not submitted.";
+  } else {
+    submitBtn.textContent = "Submit event";
+    formStatus.textContent = "Ready when you are.";
   }
   return true;
 }
 
-setFormState("idle");
+function validLocalDateTime(value) {
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/);
+  if (!match) return null;
+  const expected = [Number(match[1]), Number(match[2]) - 1, Number(match[3]), Number(match[4]), Number(match[5])];
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime()) || date.getFullYear() !== expected[0] || date.getMonth() !== expected[1] || date.getDate() !== expected[2] || date.getHours() !== expected[3] || date.getMinutes() !== expected[4]) return null;
+  return date;
+}
 
-// Handle Form Submission
-async function handleSubmission() {
-  // Only idle or error may start a new submission (blocks double-submit
-  // from repeated clicks, Enter presses and the Retry button)
-  if (currentState !== "idle" && currentState !== "error") return;
+function validate(title, description, startDate) {
+  const errors = { title: "", description: "", date: "" };
+  if (!title) errors.title = "Please enter an event title.";
+  else if (title.length < TITLE_MIN) errors.title = `Use at least ${TITLE_MIN} characters.`;
+  else if (title.length > TITLE_MAX) errors.title = `Use no more than ${TITLE_MAX} characters.`;
+  if (description.length > DESC_MAX) errors.description = `Use no more than ${DESC_MAX} characters.`;
+  if (!startDate) errors.date = "Choose a valid event start date and time.";
+  else if (startDate.getTime() <= Date.now()) errors.date = "The event start time must be in the future.";
+  return errors;
+}
 
-  const title = sanitize(titleInput.value);
-  const description = sanitize(descInput.value, { multiline: true });
-
-  // Show the cleaned value so the user sees exactly what will be sent
-  titleInput.value = title;
-  descInput.value = description;
-
-  const errors = validate(title, description);
-  showFieldError(titleInput, titleError, errors.title);
-  showFieldError(descInput, descError, errors.description);
-
-  if (errors.title || errors.description) {
-    // Go back to idle so an old server error is not shown with the field error
-    if (currentState === "error") setFormState("idle");
-    (errors.title ? titleInput : descInput).focus();
-    return;
+function appendEvent(eventData) {
+  eventsSection.hidden = false;
+  const row = document.createElement("tr");
+  const eventCell = document.createElement("td");
+  const title = document.createElement("strong");
+  title.className = "event-title";
+  title.textContent = eventData.eventTitle;
+  eventCell.append(title);
+  if (eventData.eventDescription) {
+    const description = document.createElement("span");
+    description.className = "event-description";
+    description.textContent = eventData.eventDescription;
+    eventCell.append(description);
   }
 
-  setFormState("submitting");
+  const dateCell = document.createElement("td");
+  dateCell.className = "event-start";
+  dateCell.textContent = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(eventData.startDate);
+  const countdownCell = document.createElement("td");
+  countdownCell.className = "event-countdown";
+  countdownCell.setAttribute("aria-live", "off");
+  const countdownGrid = document.createElement("div");
+  countdownGrid.className = "countdown-grid";
+  const countdownValues = ["days", "hours", "minutes", "seconds"].map((unit) => {
+    const tile = document.createElement("div");
+    tile.className = `countdown-tile countdown-${unit}`;
+    const value = document.createElement("strong");
+    value.className = "countdown-value";
+    const label = document.createElement("span");
+    label.className = "countdown-label";
+    label.textContent = { days: "Days", hours: "Hours", minutes: "Minutes", seconds: "Seconds" }[unit];
+    tile.append(value, label);
+    countdownGrid.append(tile);
+    return value;
+  });
+  countdownCell.append(countdownGrid);
+  row.append(eventCell, dateCell, countdownCell);
+  eventsList.prepend(row);
 
+  startCountdown(eventData.startDate.toISOString(), (remaining) => {
+    if (remaining.error) {
+      countdownCell.textContent = "Unable to calculate countdown.";
+      return;
+    }
+    countdownValues.forEach((value, index) => {
+      value.textContent = [remaining.days, remaining.hours, remaining.minutes, remaining.seconds][index];
+    });
+  }, () => {
+    const started = document.createElement("span");
+    started.className = "event-started-label";
+    started.textContent = "Event started ✨";
+    countdownCell.replaceChildren(started);
+    row.classList.add("event-started");
+  });
+  requestAnimationFrame(() => row.scrollIntoView({ behavior: "smooth", block: "center" }));
+}
+
+async function sendEvent(payload) {
+  if (requestInFlight || (currentState !== "idle" && currentState !== "success" && currentState !== "error")) return;
+  requestInFlight = true;
+  retryPayload = payload;
+  setFormState("submitting");
   try {
-    await submitEventData({ eventTitle: title, eventDescription: description });
-    setFormState("success", `Event "${title}" successfully submitted!`);
-  } catch (err) {
-    setFormState("error", err.message);
+    const result = await submitEventData({
+      eventTitle: payload.eventTitle,
+      eventDescription: payload.eventDescription,
+      eventStart: payload.startDate.toISOString(),
+    });
+    if (!result || result.success !== true) throw new Error(result?.message || "Submission failed. Please try again.");
+    appendEvent(payload);
+    form.reset();
+    [
+      [titleInput, titleError],
+      [descInput, descError],
+      [dateInput, dateError],
+    ].forEach(([input, errorEl]) => showFieldError(input, errorEl, ""));
+    retryPayload = null;
+    setFormState("success", `${payload.eventTitle} was submitted successfully.`);
+    showFeedback("success", "Event created", `${payload.eventTitle} was added to the countdown list.`);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Submission failed. Please try again.";
+    setFormState("error", message);
+    showFeedback("error", "Could not create event", message);
+  } finally {
+    requestInFlight = false;
   }
 }
 
-form.addEventListener("submit", (e) => {
-  e.preventDefault();
-  handleSubmission();
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+  if (requestInFlight) return;
+  successBanner.style.display = "none";
+  if (currentState === "error") setFormState("idle");
+  const title = sanitize(titleInput.value);
+  const description = sanitize(descInput.value, true);
+  const startDate = validLocalDateTime(dateInput.value);
+  titleInput.value = title;
+  descInput.value = description;
+
+  const errors = validate(title, description, startDate);
+  showFieldError(titleInput, titleError, errors.title);
+  showFieldError(descInput, descError, errors.description);
+  showFieldError(dateInput, dateError, errors.date);
+  if (errors.title || errors.description || errors.date) {
+    const message = "Please correct the highlighted fields before submitting.";
+    formStatus.textContent = message;
+    showFeedback("error", "Event not created", message);
+    (errors.title ? titleInput : errors.description ? descInput : dateInput).focus();
+    return;
+  }
+  sendEvent({ eventTitle: title, eventDescription: description, startDate });
 });
 
-retryBtn.addEventListener("click", handleSubmission);
-
-newEventBtn.addEventListener("click", () => {
-  form.reset();
-  showFieldError(titleInput, titleError, "");
-  showFieldError(descInput, descError, "");
-  setFormState("idle");
-  titleInput.focus();
+retryBtn.addEventListener("click", () => {
+  if (retryPayload) sendEvent(retryPayload);
 });
