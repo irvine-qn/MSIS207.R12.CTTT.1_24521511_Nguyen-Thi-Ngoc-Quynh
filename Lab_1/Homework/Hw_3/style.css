@@ -330,11 +330,21 @@ textarea[aria-invalid="true"] {
   color: var(--ink);
   background: #fff;
   text-align: center;
-  box-shadow: 0 24px 80px rgba(57, 42, 72, .24);
+  box-shadow: 0 24px 80px rgba(57, 42, 72, 0.24);
 }
-.feedback-dialog::backdrop { background: rgba(50, 39, 60, .38); backdrop-filter: blur(3px); }
-.feedback-dialog h2 { margin: 14px 0 8px; }
-.feedback-dialog p { margin: 0 0 22px; color: var(--muted); line-height: 1.55; overflow-wrap: anywhere; }
+.feedback-dialog::backdrop {
+  background: rgba(50, 39, 60, 0.38);
+  backdrop-filter: blur(3px);
+}
+.feedback-dialog h2 {
+  margin: 14px 0 8px;
+}
+.feedback-dialog p {
+  margin: 0 0 22px;
+  color: var(--muted);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
 .feedback-icon {
   display: grid;
   width: 54px;
@@ -347,7 +357,10 @@ textarea[aria-invalid="true"] {
   font-size: 1.7rem;
   font-weight: 800;
 }
-.feedback-dialog.is-error .feedback-icon { color: #8d3e54; background: #fff0f1; }
+.feedback-dialog.is-error .feedback-icon {
+  color: #8d3e54;
+  background: #fff0f1;
+}
 /* Wide, scroll-to event notice board */
 .events-board {
   position: relative;
@@ -359,33 +372,135 @@ textarea[aria-invalid="true"] {
   scroll-margin-top: 24px;
   background: linear-gradient(135deg, #fff 0%, #fcf9ff 58%, #fff8fa 100%);
   border-color: #e5d9ef;
-  box-shadow: 0 24px 70px rgba(84, 65, 103, .14);
+  box-shadow: 0 24px 70px rgba(84, 65, 103, 0.14);
 }
-.board-heading { max-width: 680px; margin: 0 auto 24px; text-align: center; }
-.board-kicker { display: inline-block; margin-bottom: 10px; padding: 7px 13px; border-radius: 999px; color: #69548b; background: #f0eafa; font-size: .72rem; font-weight: 850; letter-spacing: .13em; text-transform: uppercase; }
-.board-heading h2 { margin-bottom: 8px; font-size: clamp(1.9rem, 4vw, 2.6rem); }
-.board-heading .card-intro { margin-bottom: 0; }
-.events-table { min-width: 790px; border-spacing: 0 12px; table-layout: fixed; }
-.events-table th { padding: 0 16px 4px; color: #85798f; font-size: .72rem; }
-.events-table th:nth-child(1) { width: 31%; }
-.events-table th:nth-child(2) { width: 21%; }
-.events-table th:nth-child(3) { width: 48%; }
-.events-table td { padding: 21px 16px; background: #fff; border-top: 1px solid #eee7f2; border-bottom: 1px solid #eee7f2; }
-.events-table td:first-child { border-left: 1px solid #eee7f2; border-radius: 18px 0 0 18px; }
-.events-table td:last-child { border-right: 1px solid #eee7f2; border-radius: 0 18px 18px 0; white-space: normal; color: var(--ink); }
-.event-title { font-family: Georgia, serif; font-size: 1.25rem; font-weight: 600; overflow-wrap: anywhere; }
-.event-description { margin-top: 7px; line-height: 1.5; }
-.event-start { color: #62566d; font-size: .98rem; line-height: 1.5; }
-.countdown-grid { display: grid; grid-template-columns: repeat(4, minmax(74px, 1fr)); gap: 8px; }
-.countdown-tile { padding: 11px 6px 10px; border-radius: 13px; background: #f2edfa; text-align: center; }
-.countdown-hours { background: #fff0f4; }
-.countdown-minutes { background: #edf7f1; }
-.countdown-seconds { background: #fff6e9; }
-.countdown-value { display: block; color: #493f56; font-family: Georgia, serif; font-size: clamp(1.3rem, 2.5vw, 1.75rem); line-height: 1; font-variant-numeric: tabular-nums; }
-.countdown-label { display: block; margin-top: 6px; color: #85798f; font-size: .64rem; font-weight: 750; letter-spacing: .07em; text-transform: uppercase; }
-.event-started-label { display: inline-block; padding: 10px 14px; border-radius: 999px; color: #376a56; background: #e8f5ed; font-weight: 800; }
-.event-started td { background: #f7fcf8; }
+.board-heading {
+  max-width: 680px;
+  margin: 0 auto 24px;
+  text-align: center;
+}
+.board-kicker {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  color: #69548b;
+  background: #f0eafa;
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+.board-heading h2 {
+  margin-bottom: 8px;
+  font-size: clamp(1.9rem, 4vw, 2.6rem);
+}
+.board-heading .card-intro {
+  margin-bottom: 0;
+}
+.events-table {
+  min-width: 790px;
+  border-spacing: 0 12px;
+  table-layout: fixed;
+}
+.events-table th {
+  padding: 0 16px 4px;
+  color: #85798f;
+  font-size: 0.72rem;
+}
+.events-table th:nth-child(1) {
+  width: 31%;
+}
+.events-table th:nth-child(2) {
+  width: 21%;
+}
+.events-table th:nth-child(3) {
+  width: 48%;
+}
+.events-table td {
+  padding: 21px 16px;
+  background: #fff;
+  border-top: 1px solid #eee7f2;
+  border-bottom: 1px solid #eee7f2;
+}
+.events-table td:first-child {
+  border-left: 1px solid #eee7f2;
+  border-radius: 18px 0 0 18px;
+}
+.events-table td:last-child {
+  border-right: 1px solid #eee7f2;
+  border-radius: 0 18px 18px 0;
+  white-space: normal;
+  color: var(--ink);
+}
+.event-title {
+  font-family: Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.event-description {
+  margin-top: 7px;
+  line-height: 1.5;
+}
+.event-start {
+  color: #62566d;
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+.countdown-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(74px, 1fr));
+  gap: 8px;
+}
+.countdown-tile {
+  padding: 11px 6px 10px;
+  border-radius: 13px;
+  background: #f2edfa;
+  text-align: center;
+}
+.countdown-hours {
+  background: #fff0f4;
+}
+.countdown-minutes {
+  background: #edf7f1;
+}
+.countdown-seconds {
+  background: #fff6e9;
+}
+.countdown-value {
+  display: block;
+  color: #493f56;
+  font-family: Georgia, serif;
+  font-size: clamp(1.3rem, 2.5vw, 1.75rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.countdown-label {
+  display: block;
+  margin-top: 6px;
+  color: #85798f;
+  font-size: 0.64rem;
+  font-weight: 750;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.event-started-label {
+  display: inline-block;
+  padding: 10px 14px;
+  border-radius: 999px;
+  color: #376a56;
+  background: #e8f5ed;
+  font-weight: 800;
+}
+.event-started td {
+  background: #f7fcf8;
+}
 @media (max-width: 840px) {
-  .events-board { width: calc(100vw - 28px); }
-  .table-wrap { padding-bottom: 6px; }
+  .events-board {
+    width: calc(100vw - 28px);
+  }
+  .table-wrap {
+    padding-bottom: 6px;
+  }
 }
