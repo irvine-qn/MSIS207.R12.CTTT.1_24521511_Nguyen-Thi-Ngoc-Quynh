@@ -1,4 +1,5 @@
 import { audioEngine } from "./audioEngine.js";
+import { beatRecorder } from "./beatRecorder.js";
 
 export const KEY_TO_SOUND_MAP = {
   a: "kick",
@@ -21,6 +22,7 @@ const visualEffectTimers = new Map();
 function playPadSound(soundName, pad) {
   if (!audioEngine.playSound(soundName)) return;
 
+  beatRecorder.recordEvent(soundName);
   pad.classList.add("playing");
   window.clearTimeout(visualEffectTimers.get(soundName));
   visualEffectTimers.set(

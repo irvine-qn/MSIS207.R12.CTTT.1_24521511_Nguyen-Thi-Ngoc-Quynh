@@ -112,6 +112,20 @@
         </button>
       </div>
 
+      <section class="recorder" aria-label="Beat recorder">
+        <div class="recorder-controls">
+          <button type="button" id="record-button">Start recording</button>
+          <button type="button" id="stop-recording-button" disabled>
+            Stop recording
+          </button>
+          <button type="button" id="replay-button" disabled>Replay</button>
+          <button type="button" id="clear-button" disabled>Clear</button>
+        </div>
+        <p id="recorder-status" class="recorder-status" aria-live="polite">
+          Not recording
+        </p>
+      </section>
+
       <p class="hint">Keyboard: A S D F G H J K L · You can also click a pad</p>
     </main>
     <script type="module" src="./main.js"></script>

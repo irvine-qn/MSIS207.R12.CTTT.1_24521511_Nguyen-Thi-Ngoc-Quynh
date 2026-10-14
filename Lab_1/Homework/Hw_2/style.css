@@ -76,6 +76,44 @@ h1 {
   border-color: #1abc9c;
 }
 
+.recorder {
+  margin-top: 24px;
+}
+
+.recorder-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.recorder-controls button {
+  padding: 10px 16px;
+  border: 1px solid #052d35;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #052d35;
+  font: inherit;
+  cursor: pointer;
+}
+
+.recorder-controls button:hover:not(:disabled),
+.recorder-controls button:focus-visible {
+  background: #d9f3f3;
+  outline: 2px solid #20303b;
+  outline-offset: 2px;
+}
+
+.recorder-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.recorder-status {
+  min-height: 1.5em;
+  margin: 12px 0 0;
+}
+
 .hint {
   margin-top: 28px;
   color: #000000;
