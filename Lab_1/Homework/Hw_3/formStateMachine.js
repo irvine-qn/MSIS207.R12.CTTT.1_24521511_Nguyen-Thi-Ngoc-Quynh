@@ -1,6 +1,6 @@
 /**
  * Mock API call. A title of "fail" simulates a server error.
- * @param {{ eventTitle: string, eventDescription: string }} formData
+ * @param {{ eventTitle: string, eventDescription: string, eventStart: string }} formData
  * @returns {Promise<{ success: boolean, message: string }>}
  */
 export function submitEventData(formData) {
