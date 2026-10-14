@@ -66,3 +66,17 @@ button:disabled {
 input[aria-invalid="true"] {
   border: 1px solid #dc2626;
 }
+.countdown-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+.countdown-form label {
+  width: 100%;
+}
+.countdown-form input {
+  width: auto;
+  flex: 1 1 200px;
+}

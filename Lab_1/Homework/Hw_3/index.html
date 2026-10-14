@@ -8,8 +8,15 @@
   </head>
   <body>
     <h1>Event Countdown</h1>
-    <div id="timer-display" class="timer" aria-live="polite">Loading...</div>
-    <button type="button" id="stop-btn">Stop Timer</button>
+    <form id="countdown-form" class="countdown-form" novalidate>
+      <label for="eventDate">Event date &amp; time</label>
+      <input type="datetime-local" id="eventDate" />
+      <button type="submit" id="start-btn">Start Countdown</button>
+    </form>
+    <div id="timer-display" class="timer" aria-live="polite">
+      Pick an event date to start.
+    </div>
+    <button type="button" id="stop-btn" disabled>Stop Timer</button>
 
     <h2>Event Hub Submission Form</h2>
 
@@ -46,6 +53,7 @@
           maxlength="500"
           placeholder="Enter details..."
         ></textarea>
+        <div id="description-error" class="error-msg" aria-live="polite"></div>
       </div>
 
       <button type="submit" id="submit-btn">Submit Event</button>

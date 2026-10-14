@@ -3,29 +3,61 @@ import { submitEventData } from "./formStateMachine.js";
 
 // ---------- Slice 1: Countdown ----------
 
-const target = "2030-01-01T00:00:00Z";
+const countdownForm = document.getElementById("countdown-form");
+const dateInput = document.getElementById("eventDate");
 const display = document.getElementById("timer-display");
 const stopBtn = document.getElementById("stop-btn");
 
-const timer = startCountdown(
-  target,
-  (data) => {
-    if (data.error) {
-      display.className = "timer error";
-      display.textContent = data.error;
+let timer = null;
+
+function showTimerMessage(message, isError = false) {
+  display.className = isError ? "timer error" : "timer";
+  display.textContent = message;
+}
+
+countdownForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+
+  if (!dateInput.value) {
+    showTimerMessage("Please pick an event date.", true);
+    return;
+  }
+
+  // datetime-local has no timezone: read it as the user's local time,
+  // then convert to a UTC ISO string ("...Z") for the countdown engine
+  const eventDate = new Date(dateInput.value);
+  if (eventDate.getTime() <= Date.now()) {
+    showTimerMessage("Event date must be in the future.", true);
+    return;
+  }
+
+  // Only one countdown at a time: clean up the previous timer first
+  if (timer) timer.stop();
+
+  showTimerMessage("");
+  stopBtn.textContent = "Stop Timer";
+  stopBtn.disabled = false;
+
+  timer = startCountdown(
+    eventDate.toISOString(),
+    (data) => {
+      if (data.error) {
+        showTimerMessage(data.error, true);
+        stopBtn.disabled = true;
+        return;
+      }
+      display.textContent = `${data.days}d : ${data.hours}h : ${data.minutes}m : ${data.seconds}s`;
+    },
+    () => {
+      showTimerMessage("The event has started!");
       stopBtn.disabled = true;
-      return;
-    }
-    display.textContent = `${data.days}d : ${data.hours}h : ${data.minutes}m : ${data.seconds}s`;
-  },
-  () => {
-    display.textContent = "Countdown finished!";
-    stopBtn.disabled = true;
-  },
-);
+    },
+  );
+});
 
 stopBtn.addEventListener("click", () => {
-  timer.stop();
+  if (timer) timer.stop();
+  timer = null;
   stopBtn.textContent = "Timer Stopped";
   stopBtn.disabled = true;
 });
@@ -43,7 +75,9 @@ const errorBanner = document.getElementById("error-banner");
 const errorText = document.getElementById("error-text");
 const retryBtn = document.getElementById("retry-btn");
 const titleError = document.getElementById("title-error");
+const descError = document.getElementById("description-error");
 
+const TITLE_MIN = 3;
 const TITLE_MAX = 100;
 const DESC_MAX = 500;
 
@@ -57,9 +91,10 @@ const TRANSITIONS = {
 
 let currentState = null;
 
-// Trim, drop control characters, collapse whitespace and cap the length.
-// Output is only ever rendered with textContent, never innerHTML.
-function sanitize(value, maxLength, { multiline = false } = {}) {
+// Normalize input: trim, drop control characters and collapse whitespace.
+// Length is checked in validate() so the user gets a message instead of
+// silent truncation. Output is only ever rendered with textContent.
+function sanitize(value, { multiline = false } = {}) {
   let text = String(value).normalize("NFC");
   if (multiline) {
     text = text
@@ -70,19 +105,27 @@ function sanitize(value, maxLength, { multiline = false } = {}) {
   } else {
     text = text.replace(/[\u0000-\u001F\u007F]/g, "").replace(/\s+/g, " ");
   }
-  return text.trim().slice(0, maxLength);
+  return text.trim();
 }
 
-function validate(title) {
-  if (!title) return "Title is required.";
-  if (title.length < 3) return "Title must be at least 3 characters.";
-  return "";
+// Rules per field: title is required (3-100 chars), description is optional (max 500)
+function validate(title, description) {
+  const errors = { title: "", description: "" };
+  if (!title) errors.title = "Title is required.";
+  else if (title.length < TITLE_MIN)
+    errors.title = `Title must be at least ${TITLE_MIN} characters.`;
+  else if (title.length > TITLE_MAX)
+    errors.title = `Title must be at most ${TITLE_MAX} characters.`;
+
+  if (description.length > DESC_MAX)
+    errors.description = `Description must be at most ${DESC_MAX} characters.`;
+  return errors;
 }
 
-function showFieldError(message) {
-  titleError.textContent = message;
-  titleError.style.display = message ? "block" : "none";
-  titleInput.setAttribute("aria-invalid", message ? "true" : "false");
+function showFieldError(input, errorEl, message) {
+  errorEl.textContent = message;
+  errorEl.style.display = message ? "block" : "none";
+  input.setAttribute("aria-invalid", message ? "true" : "false");
 }
 
 function setInputsDisabled(disabled) {
@@ -140,22 +183,23 @@ async function handleSubmission() {
   // from repeated clicks, Enter presses and the Retry button)
   if (currentState !== "idle" && currentState !== "error") return;
 
-  const title = sanitize(titleInput.value, TITLE_MAX);
-  const description = sanitize(descInput.value, DESC_MAX, { multiline: true });
+  const title = sanitize(titleInput.value);
+  const description = sanitize(descInput.value, { multiline: true });
 
   // Show the cleaned value so the user sees exactly what will be sent
   titleInput.value = title;
   descInput.value = description;
 
-  const fieldError = validate(title);
-  if (fieldError) {
+  const errors = validate(title, description);
+  showFieldError(titleInput, titleError, errors.title);
+  showFieldError(descInput, descError, errors.description);
+
+  if (errors.title || errors.description) {
     // Go back to idle so an old server error is not shown with the field error
     if (currentState === "error") setFormState("idle");
-    showFieldError(fieldError);
-    titleInput.focus();
+    (errors.title ? titleInput : descInput).focus();
     return;
   }
-  showFieldError("");
 
   setFormState("submitting");
 
@@ -176,7 +220,8 @@ retryBtn.addEventListener("click", handleSubmission);
 
 newEventBtn.addEventListener("click", () => {
   form.reset();
-  showFieldError("");
+  showFieldError(titleInput, titleError, "");
+  showFieldError(descInput, descError, "");
   setFormState("idle");
   titleInput.focus();
 });
