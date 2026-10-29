@@ -2,7 +2,15 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import AudioVisualizer from "@/components/AudioVisualizer";
+import CoverImage from "@/components/CoverImage";
 import TrackQueueUI from "@/components/TrackQueueUI";
+import {
+  BUFFER_CACHE_LIMIT,
+  DEFAULT_FFT_BINS,
+  FFT_BIN_OPTIONS,
+  PLAYHEAD_POLL_MS,
+  VISUALIZER_DEFAULTS,
+} from "@/config/audio";
 import { mockTracks } from "@/data/mockTracks";
 import { AudioEngine } from "@/engine/AudioEngine";
 import { AudioTaskQueue } from "@/engine/AudioTaskQueue";
@@ -10,51 +18,62 @@ import type { FftBins, TrackMetadata, VisualizerConfig } from "@/types/audio";
 
 type PlayerStatus = "idle" | "loading" | "playing" | "paused";
 
-/** Decoded tracks are large (~100 MB each), so keep only the most recent few. */
-const CACHE_LIMIT = 2;
-
-const STATUS_LABEL: Record<PlayerStatus, string> = {
-  idle: "Sẵn sàng",
-  loading: "Đang tải…",
-  playing: "Đang phát",
-  paused: "Tạm dừng",
+const PLAYER_STATUS_LABEL: Record<PlayerStatus, string> = {
+  idle: "Idle",
+  loading: "Loading",
+  playing: "Playing",
+  paused: "Paused",
 };
 
-function formatTime(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  return `${m}:${s.toString().padStart(2, "0")}`;
+const PLAYER_STATUS_STYLE: Record<PlayerStatus, string> = {
+  idle: "bg-zinc-800 text-zinc-400",
+  loading: "bg-sky-500/20 text-sky-300",
+  playing: "bg-violet-500/20 text-violet-300",
+  paused: "bg-zinc-800 text-zinc-300",
+};
+
+function formatTime(seconds: number | undefined): string {
+  if (seconds === undefined) return "--:--";
+  const minutes = Math.floor(seconds / 60);
+  const remainder = Math.floor(seconds % 60);
+  return `${minutes}:${remainder.toString().padStart(2, "0")}`;
 }
 
 function isAbortError(err: unknown): boolean {
   return err instanceof DOMException && err.name === "AbortError";
 }
 
-export default function Home() {
+export default function SonicFlowPage() {
+  const tracks = mockTracks;
+
   const engineRef = useRef<AudioEngine | null>(null);
   const queueRef = useRef<AudioTaskQueue | null>(null);
-  const cacheRef = useRef(new Map<string, AudioBuffer>());
+  const bufferCacheRef = useRef(new Map<string, AudioBuffer>());
   // Bumped on every track request so slow, outdated loads never start playing.
-  const requestIdRef = useRef(0);
+  const playRequestIdRef = useRef(0);
+  const pendingTrackUrlRef = useRef<string | null>(null);
 
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [status, setStatus] = useState<PlayerStatus>("idle");
-  const [elapsed, setElapsed] = useState(0);
-  const [error, setError] = useState<string | null>(null);
-  const [fftBins, setFftBins] = useState<FftBins>(256);
+  const [playerStatus, setPlayerStatus] = useState<PlayerStatus>("idle");
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [trackDurations, setTrackDurations] = useState<Record<string, number>>({});
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [fftBins, setFftBins] = useState<FftBins>(DEFAULT_FFT_BINS);
 
-  const config = useMemo<VisualizerConfig>(
-    () => ({ fftBins, barWidth: 4, barGap: 2, colorTheme: "#a78bfa" }),
+  const visualizerConfig = useMemo<VisualizerConfig>(
+    () => ({ fftBins, ...VISUALIZER_DEFAULTS }),
     [fftBins],
   );
 
-  const current = mockTracks[currentIndex];
+  const currentTrack = tracks[currentIndex];
+  const currentDuration = currentTrack ? trackDurations[currentTrack.id] : undefined;
 
   // The AudioContext may only start after a user gesture, so create it on demand.
   function getEngine(): AudioEngine {
     if (!engineRef.current) {
       engineRef.current = AudioEngine.getInstance();
+      engineRef.current.setFftBins(fftBins);
       setAnalyser(engineRef.current.getAnalyser());
     }
     return engineRef.current;
@@ -65,91 +84,114 @@ export default function Home() {
     return queueRef.current;
   }
 
-  function cacheBuffer(trackId: string, buffer: AudioBuffer): void {
-    const cache = cacheRef.current;
-    cache.delete(trackId);
-    cache.set(trackId, buffer);
-    while (cache.size > CACHE_LIMIT) {
-      const oldest = cache.keys().next().value;
-      if (oldest === undefined) break;
-      cache.delete(oldest);
+  function rememberBuffer(track: TrackMetadata, buffer: AudioBuffer): void {
+    setTrackDurations((prev) => ({ ...prev, [track.id]: buffer.duration }));
+
+    const cache = bufferCacheRef.current;
+    cache.delete(track.id);
+    cache.set(track.id, buffer);
+    while (cache.size > BUFFER_CACHE_LIMIT) {
+      const oldestId = cache.keys().next().value;
+      if (oldestId === undefined) break;
+      cache.delete(oldestId);
     }
   }
 
-  async function playIndex(index: number): Promise<void> {
-    const track = mockTracks[index];
+  async function playTrackAt(index: number): Promise<void> {
+    const track = tracks[index];
     if (!track) return;
-    const requestId = ++requestIdRef.current;
+    const requestId = ++playRequestIdRef.current;
     const engine = getEngine();
+    const queue = getQueue();
 
     setCurrentIndex(index);
-    setElapsed(0);
-    setError(null);
+    setElapsedSeconds(0);
+    setErrorMessage(null);
+
+    // Only the previous playlist request is dropped; tracks queued by hand stay.
+    if (pendingTrackUrlRef.current && pendingTrackUrlRef.current !== track.url) {
+      queue.cancelTask(pendingTrackUrlRef.current);
+    }
 
     try {
-      let buffer = cacheRef.current.get(track.id);
+      let buffer = bufferCacheRef.current.get(track.id);
       if (!buffer) {
-        // Stop the old track right away and drop any download it no longer needs.
         engine.stopAndClean();
-        setStatus("loading");
-        getQueue().clearQueue();
-        buffer = await getQueue().enqueue(track.url);
-        cacheBuffer(track.id, buffer);
+        setPlayerStatus("loading");
+        pendingTrackUrlRef.current = track.url;
+        buffer = await queue.enqueue(track.url);
+        rememberBuffer(track, buffer);
       }
-      if (requestId !== requestIdRef.current) return;
+      if (requestId !== playRequestIdRef.current) return;
+      pendingTrackUrlRef.current = null;
 
       await engine.play(buffer, 0, () => {
-        void playIndex((index + 1) % mockTracks.length);
+        void playTrackAt((index + 1) % tracks.length);
       });
-      setStatus("playing");
+      setPlayerStatus("playing");
     } catch (err) {
-      if (isAbortError(err) || requestId !== requestIdRef.current) return;
-      setStatus("idle");
-      setError(err instanceof Error ? err.message : "Không phát được bài hát");
+      if (isAbortError(err) || requestId !== playRequestIdRef.current) return;
+      pendingTrackUrlRef.current = null;
+      setPlayerStatus("idle");
+      setErrorMessage(
+        `Không phát được "${track.title}". Kiểm tra file ${track.url} trong thư mục public.`,
+      );
     }
   }
 
-  async function togglePlay(): Promise<void> {
+  async function togglePlayback(): Promise<void> {
     const engine = getEngine();
-    if (status === "playing") {
+    if (playerStatus === "playing") {
       await engine.pause();
-      setStatus("paused");
-    } else if (status === "paused") {
+      setPlayerStatus("paused");
+    } else if (playerStatus === "paused") {
       await engine.resume();
-      setStatus("playing");
-    } else if (status === "idle") {
-      await playIndex(currentIndex);
+      setPlayerStatus("playing");
+    } else if (playerStatus === "idle") {
+      await playTrackAt(currentIndex);
     }
   }
 
-  function handleQueueReady(track: TrackMetadata, buffer: AudioBuffer): void {
-    cacheBuffer(track.id, buffer);
+  function changeFftBins(bins: FftBins): void {
+    setFftBins(bins);
+    engineRef.current?.setFftBins(bins);
+  }
+
+  function handleQueuedTrackReady(track: TrackMetadata, buffer: AudioBuffer): void {
+    rememberBuffer(track, buffer);
     if (!engineRef.current?.isActive) {
-      void playIndex(mockTracks.findIndex((t) => t.id === track.id));
+      void playTrackAt(tracks.findIndex((t) => t.id === track.id));
     }
   }
 
-  // Poll the playhead a few times per second; the visualizer has its own rAF loop.
+  // The progress bar only needs a few updates per second; the visualizer has its own rAF loop.
   useEffect(() => {
-    if (status !== "playing") return;
-    const id = window.setInterval(() => {
-      setElapsed(engineRef.current?.getCurrentTime() ?? 0);
-    }, 250);
-    return () => window.clearInterval(id);
-  }, [status]);
+    if (playerStatus !== "playing") return;
+    const intervalId = window.setInterval(() => {
+      setElapsedSeconds(engineRef.current?.getCurrentTime() ?? 0);
+    }, PLAYHEAD_POLL_MS);
+    return () => window.clearInterval(intervalId);
+  }, [playerStatus]);
 
   useEffect(() => {
-    const cache = cacheRef.current;
+    const bufferCache = bufferCacheRef.current;
+    const queueHolder = queueRef;
+    const engineHolder = engineRef;
     return () => {
-      AudioEngine.getInstance().stopAndClean();
-      cache.clear();
+      queueHolder.current?.clearQueue();
+      void engineHolder.current?.dispose();
+      bufferCache.clear();
     };
   }, []);
 
-  if (!current) return null;
+  if (!currentTrack) return null;
 
-  const progress = Math.min(100, (elapsed / current.duration) * 100);
-  const isPlaying = status === "playing";
+  const isPlaying = playerStatus === "playing";
+  const progressPercent = currentDuration
+    ? Math.min(100, (elapsedSeconds / currentDuration) * 100)
+    : 0;
+  const stepTrack = (offset: number) =>
+    void playTrackAt((currentIndex + offset + tracks.length) % tracks.length);
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-zinc-950">
@@ -159,49 +201,40 @@ export default function Home() {
       />
 
       <div className="relative mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8">
-        <header className="flex items-end justify-between">
-          <div>
-            <h1 className="bg-gradient-to-r from-violet-300 to-fuchsia-400 bg-clip-text text-4xl font-black tracking-tight text-transparent">
-              SonicFlow
-            </h1>
-            <p className="text-sm text-zinc-400">Real-time audio visualizer</p>
-          </div>
+        <header>
+          <h1 className="bg-gradient-to-r from-violet-300 to-fuchsia-400 bg-clip-text text-4xl font-black tracking-tight text-transparent">
+            SonicFlow
+          </h1>
+          <p className="text-sm text-zinc-400">Real-time audio visualizer</p>
         </header>
 
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
           <section
-            aria-label="Đang phát"
+            aria-label="Now playing"
             className="rounded-3xl bg-zinc-900/70 p-6 ring-1 ring-white/10 backdrop-blur"
           >
             <div className="flex items-center gap-5">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={current.coverUrl}
-                alt={`Ảnh bìa ${current.title}`}
+              <CoverImage
+                src={currentTrack.coverUrl}
+                alt={`Ảnh bìa ${currentTrack.title}`}
                 className={`h-28 w-28 rounded-2xl object-cover shadow-lg shadow-violet-900/40 transition-transform duration-500 ${
                   isPlaying ? "scale-100" : "scale-95"
                 }`}
               />
               <div className="min-w-0 flex-1">
                 <span
-                  className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                    isPlaying
-                      ? "bg-violet-500/20 text-violet-300"
-                      : status === "loading"
-                        ? "bg-sky-500/20 text-sky-300"
-                        : "bg-zinc-800 text-zinc-400"
-                  }`}
+                  className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${PLAYER_STATUS_STYLE[playerStatus]}`}
                 >
-                  {STATUS_LABEL[status]}
+                  {PLAYER_STATUS_LABEL[playerStatus]}
                 </span>
-                <h2 className="mt-2 truncate text-2xl font-bold">{current.title}</h2>
-                <p className="truncate text-zinc-400">{current.artist}</p>
+                <h2 className="mt-2 truncate text-2xl font-bold">{currentTrack.title}</h2>
+                <p className="truncate text-zinc-400">{currentTrack.artist}</p>
               </div>
             </div>
 
             <AudioVisualizer
               analyser={analyser}
-              config={config}
+              config={visualizerConfig}
               isPlaying={isPlaying}
               className="mt-6 h-56 w-full rounded-2xl bg-black/40"
             />
@@ -211,18 +244,18 @@ export default function Home() {
                 role="progressbar"
                 aria-label="Tiến độ bài hát"
                 aria-valuemin={0}
-                aria-valuemax={Math.round(current.duration)}
-                aria-valuenow={Math.round(elapsed)}
+                aria-valuemax={Math.round(currentDuration ?? 0)}
+                aria-valuenow={Math.round(elapsedSeconds)}
                 className="h-1.5 overflow-hidden rounded-full bg-zinc-800"
               >
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-violet-400 to-fuchsia-400 transition-[width] duration-200 ease-linear"
-                  style={{ width: `${progress}%` }}
+                  style={{ width: `${progressPercent}%` }}
                 />
               </div>
               <div className="mt-1 flex justify-between text-xs tabular-nums text-zinc-500">
-                <span>{formatTime(elapsed)}</span>
-                <span>{formatTime(current.duration)}</span>
+                <span>{formatTime(elapsedSeconds)}</span>
+                <span>{formatTime(currentDuration)}</span>
               </div>
             </div>
 
@@ -231,9 +264,7 @@ export default function Home() {
                 <button
                   type="button"
                   aria-label="Bài trước"
-                  onClick={() =>
-                    void playIndex((currentIndex - 1 + mockTracks.length) % mockTracks.length)
-                  }
+                  onClick={() => stepTrack(-1)}
                   className="grid h-11 w-11 place-items-center rounded-full bg-zinc-800 text-lg hover:bg-zinc-700"
                 >
                   ⏮
@@ -241,8 +272,8 @@ export default function Home() {
                 <button
                   type="button"
                   aria-label={isPlaying ? "Tạm dừng" : "Phát"}
-                  onClick={() => void togglePlay()}
-                  disabled={status === "loading"}
+                  onClick={() => void togglePlayback()}
+                  disabled={playerStatus === "loading"}
                   className="grid h-14 w-14 place-items-center rounded-full bg-violet-500 text-2xl text-white shadow-lg shadow-violet-900/50 transition hover:scale-105 hover:bg-violet-400 disabled:animate-pulse disabled:hover:scale-100"
                 >
                   {isPlaying ? "⏸" : "▶"}
@@ -250,7 +281,7 @@ export default function Home() {
                 <button
                   type="button"
                   aria-label="Bài tiếp theo"
-                  onClick={() => void playIndex((currentIndex + 1) % mockTracks.length)}
+                  onClick={() => stepTrack(1)}
                   className="grid h-11 w-11 place-items-center rounded-full bg-zinc-800 text-lg hover:bg-zinc-700"
                 >
                   ⏭
@@ -262,13 +293,13 @@ export default function Home() {
                 aria-label="Số FFT bins"
                 className="flex rounded-full bg-zinc-800 p-1 text-sm"
               >
-                {([256, 512] as const).map((bins) => (
+                {FFT_BIN_OPTIONS.map((bins) => (
                   <button
                     key={bins}
                     type="button"
                     role="radio"
                     aria-checked={fftBins === bins}
-                    onClick={() => setFftBins(bins)}
+                    onClick={() => changeFftBins(bins)}
                     className={`rounded-full px-4 py-1.5 transition ${
                       fftBins === bins
                         ? "bg-violet-500 text-white"
@@ -281,41 +312,44 @@ export default function Home() {
               </div>
             </div>
 
-            {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
+            {errorMessage && <p className="mt-4 text-sm text-red-400">{errorMessage}</p>}
           </section>
 
           <aside
-            aria-label="Danh sách phát"
+            aria-label="Playlist"
             className="rounded-3xl bg-zinc-900/70 p-4 ring-1 ring-white/10 backdrop-blur"
           >
             <h2 className="px-2 pb-2 text-sm font-semibold uppercase tracking-wider text-zinc-400">
               Playlist
             </h2>
             <ul className="space-y-1">
-              {mockTracks.map((track, i) => {
-                const active = i === currentIndex;
+              {tracks.map((track, index) => {
+                const isCurrent = index === currentIndex;
                 return (
                   <li key={track.id}>
                     <button
                       type="button"
-                      onClick={() => void playIndex(i)}
-                      aria-current={active ? "true" : undefined}
+                      onClick={() => void playTrackAt(index)}
+                      aria-current={isCurrent ? "true" : undefined}
                       className={`flex w-full items-center gap-3 rounded-xl p-2 text-left transition ${
-                        active ? "bg-violet-500/15 ring-1 ring-violet-500/40" : "hover:bg-white/5"
+                        isCurrent ? "bg-violet-500/15 ring-1 ring-violet-500/40" : "hover:bg-white/5"
                       }`}
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={track.coverUrl} alt="" className="h-10 w-10 rounded-lg object-cover" />
+                      <CoverImage
+                        src={track.coverUrl}
+                        alt=""
+                        className="h-10 w-10 rounded-lg object-cover"
+                      />
                       <span className="min-w-0 flex-1">
                         <span
-                          className={`block truncate text-sm font-medium ${active ? "text-violet-300" : ""}`}
+                          className={`block truncate text-sm font-medium ${isCurrent ? "text-violet-300" : ""}`}
                         >
                           {track.title}
                         </span>
                         <span className="block truncate text-xs text-zinc-500">{track.artist}</span>
                       </span>
                       <span className="text-xs tabular-nums text-zinc-500">
-                        {formatTime(track.duration)}
+                        {formatTime(trackDurations[track.id])}
                       </span>
                     </button>
                   </li>
@@ -325,7 +359,7 @@ export default function Home() {
           </aside>
         </div>
 
-        <TrackQueueUI tracks={mockTracks} getQueue={getQueue} onReady={handleQueueReady} />
+        <TrackQueueUI tracks={tracks} getQueue={getQueue} onReady={handleQueuedTrackReady} />
       </div>
     </main>
   );
