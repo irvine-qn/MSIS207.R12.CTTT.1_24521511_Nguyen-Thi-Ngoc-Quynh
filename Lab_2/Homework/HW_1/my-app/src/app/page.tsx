@@ -5,6 +5,8 @@ import { DataGrid } from "@/components/ui/DataGrid";
 import { columns, mockAssets } from "@/data/mockAssets";
 import type { Asset } from "@/types/portfolio";
 
+const getAssetId = (asset: Asset) => asset.id;
+
 export default function Home() {
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
 
@@ -16,8 +18,14 @@ export default function Home() {
         data={mockAssets}
         columns={columns}
         onRowSelect={setSelectedAsset}
+        getRowId={getAssetId}
         ariaLabel="Enterprise Stock and Crypto Portfolio"
       />
+
+      <p className="text-sm text-[#94A3B8]">
+        Use arrow keys to move between cells, Enter to select an asset, Space
+        to bookmark a row.
+      </p>
 
       <p aria-live="polite" className="text-[#94A3B8]">
         {selectedAsset
