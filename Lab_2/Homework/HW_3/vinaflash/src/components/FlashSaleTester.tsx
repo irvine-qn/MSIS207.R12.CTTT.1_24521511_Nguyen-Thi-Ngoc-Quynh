@@ -1,19 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
-import type {
-  FlashSaleItem,
-  InventoryState,
-  ReservationLock,
-} from "@/types/flashSale";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import type { InventoryState } from "@/types/flashSale";
 import { mockProducts } from "@/data/mockProducts";
-import {
-  availableStock,
-  createLock,
-  isLockExpired,
-} from "@/engine/reservation";
+import { availableStock } from "@/engine/reservation";
 import { createAntiDriftTimer } from "@/engine/antiDriftTimer";
+import {
+  HOLD_DURATION_MS,
+  createInventoryStateMachine,
+} from "@/engine/inventoryStateMachine";
 
 const SALE_DURATION_MS = 60_000;
 
@@ -34,8 +30,13 @@ const statusStyle: Record<InventoryState, string> = {
 };
 
 export default function FlashSaleTester() {
-  const [items, setItems] = useState<FlashSaleItem[]>(mockProducts);
-  const [locks, setLocks] = useState<ReservationLock[]>([]);
+  const [machine] = useState(() => createInventoryStateMachine(mockProducts));
+  const { items, locks } = useSyncExternalStore(
+    machine.subscribe,
+    machine.getSnapshot,
+    machine.getSnapshot,
+  );
+  const [message, setMessage] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const [saleRemaining, setSaleRemaining] = useState(SALE_DURATION_MS);
   const [saleRound, setSaleRound] = useState(0);
@@ -46,59 +47,28 @@ export default function FlashSaleTester() {
     [saleRound],
   );
 
-  const locksRef = useRef(locks);
-  useEffect(() => {
-    locksRef.current = locks;
-  }, [locks]);
+  useEffect(() => machine.dispose, [machine]);
 
+  // Display-only clock for the per-lock countdown; expiry itself is driven by the state machine
   useEffect(() => {
-    const id = setInterval(() => {
-      const t = Date.now();
-      setNow(t);
-      const expired = locksRef.current.filter((l) => isLockExpired(l, t));
-      if (expired.length === 0) return;
-      setItems((its) =>
-        its.map((it) => {
-          const n = expired.filter((l) => l.itemId === it.id).length;
-          return n ? { ...it, reservedStock: it.reservedStock - n } : it;
-        }),
-      );
-      const next = locksRef.current.map((l) =>
-        expired.includes(l) ? { ...l, status: "EXPIRED" as const } : l,
-      );
-      locksRef.current = next;
-      setLocks(next);
-    }, 250);
+    const id = setInterval(() => setNow(Date.now()), 250);
     return () => clearInterval(id);
   }, []);
 
-  const reserve = (item: FlashSaleItem) => {
-    if (saleEnded || availableStock(item) <= 0) return;
-    setItems((its) =>
-      its.map((it) =>
-        it.id === item.id ? { ...it, reservedStock: it.reservedStock + 1 } : it,
-      ),
-    );
-    setLocks((ls) => [createLock(item.id), ...ls]);
+  const reserve = (itemId: string) => {
+    if (saleEnded) return;
+    const result = machine.reserveStock(itemId);
+    setMessage(result.ok ? null : result.reason);
   };
 
-  const purchase = (lock: ReservationLock) => {
-    if (lock.status !== "RESERVED" || isLockExpired(lock)) return;
-    setItems((its) =>
-      its.map((it) =>
-        it.id === lock.itemId
-          ? { ...it, stock: it.stock - 1, reservedStock: it.reservedStock - 1 }
-          : it,
-      ),
-    );
-    setLocks((ls) =>
-      ls.map((l) => (l === lock ? { ...l, status: "PURCHASED" } : l)),
-    );
+  const purchase = (itemId: string) => {
+    const result = machine.confirmCheckout(itemId);
+    setMessage(result.ok ? null : result.reason);
   };
 
   const reset = () => {
-    setItems(mockProducts);
-    setLocks([]);
+    machine.reset();
+    setMessage(null);
     setSaleRemaining(SALE_DURATION_MS);
     setSaleRound((r) => r + 1);
   };
@@ -124,15 +94,23 @@ export default function FlashSaleTester() {
         </button>
       </header>
 
+      {message && (
+        <p className="rounded bg-amber-100 px-3 py-2 text-sm text-amber-900">
+          {message}
+        </p>
+      )}
+
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((item) => {
           const avail = availableStock(item);
-          const state: InventoryState =
-            avail > 0
+          const held = locks.some(
+            (l) => l.itemId === item.id && l.status === "RESERVED",
+          );
+          const state: InventoryState = held
+            ? "RESERVED"
+            : avail > 0
               ? "AVAILABLE"
-              : item.reservedStock > 0
-                ? "RESERVED"
-                : "PURCHASED";
+              : "PURCHASED";
           return (
             <article
               key={item.id}
@@ -171,15 +149,17 @@ export default function FlashSaleTester() {
                   {state}
                 </span>
                 <button
-                  onClick={() => reserve(item)}
-                  disabled={saleEnded || avail <= 0}
+                  onClick={() => reserve(item.id)}
+                  disabled={saleEnded || held || avail <= 0}
                   className="block w-full rounded bg-red-600 py-2 font-medium text-white disabled:cursor-not-allowed disabled:bg-zinc-400"
                 >
                   {saleEnded
                     ? "Đã kết thúc"
-                    : avail > 0
-                      ? "Giữ hàng (10s)"
-                      : "Hết hàng"}
+                    : held
+                      ? "Đang giữ hàng"
+                      : avail > 0
+                        ? `Giữ hàng (${HOLD_DURATION_MS / 1000}s)`
+                        : "Hết hàng"}
                 </button>
               </div>
             </article>
@@ -238,7 +218,7 @@ export default function FlashSaleTester() {
                       <td>
                         {lock.status === "RESERVED" && (
                           <button
-                            onClick={() => purchase(lock)}
+                            onClick={() => purchase(lock.itemId)}
                             className="rounded bg-sky-600 px-3 py-1 text-white"
                           >
                             Mua
