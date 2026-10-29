@@ -1,11 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
 import type { FlashSaleItem, InventoryState } from "@/types/flashSale";
 import { availableStock } from "@/engine/reservation";
-import { createAntiDriftTimer } from "@/engine/antiDriftTimer";
 import { HOLD_DURATION_MS } from "@/engine/inventoryStateMachine";
+import type { SaleWindow } from "@/engine/saleSchedule";
+import { useSaleCountdown } from "@/hooks/useSaleCountdown";
 
 const LOW_STOCK_THRESHOLD = 3;
 
@@ -37,7 +37,7 @@ export const statusStyle: Record<InventoryState, string> = {
 interface FlashSaleCardProps {
   item: FlashSaleItem;
   initialStock: number;
-  endsAt: number;
+  saleWindow: SaleWindow;
   held: boolean;
   onReserve: (itemId: string) => void;
 }
@@ -45,19 +45,13 @@ interface FlashSaleCardProps {
 export default function FlashSaleCard({
   item,
   initialStock,
-  endsAt,
+  saleWindow,
   held,
   onReserve,
 }: FlashSaleCardProps) {
-  const [remaining, setRemaining] = useState(() =>
-    Math.max(0, endsAt - Date.now()),
-  );
-  const ended = remaining <= 0;
-
-  useEffect(
-    () => createAntiDriftTimer(Math.max(0, endsAt - Date.now()), setRemaining),
-    [endsAt],
-  );
+  const { phase, remaining } = useSaleCountdown(saleWindow);
+  const ended = phase === "ENDED";
+  const upcoming = phase === "UPCOMING";
 
   const avail = availableStock(item);
   const sold = initialStock - item.stock;
@@ -105,7 +99,11 @@ export default function FlashSaleCard({
 
         <div className="flex items-center justify-between text-sm">
           <span className="text-zinc-500">
-            {ended ? "Flash sale đã kết thúc" : "Kết thúc sau"}
+            {ended
+              ? "Flash sale đã kết thúc"
+              : upcoming
+                ? "Mở bán sau"
+                : "Kết thúc sau"}
           </span>
           {!ended && (
             <span className="rounded bg-zinc-900 px-2 py-0.5 font-mono text-white tabular-nums">
