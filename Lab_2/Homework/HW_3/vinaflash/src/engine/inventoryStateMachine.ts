@@ -13,13 +13,16 @@ export interface InventorySnapshot {
 }
 
 export type TransitionResult =
-  | { ok: true; lock: ReservationLock }
-  | { ok: false; reason: string };
+  { ok: true; lock: ReservationLock } | { ok: false; reason: string };
 
+/**
+ * PURCHASED is applied optimistically before the payment is confirmed, so it can be
+ * rolled back: to RESERVED if the hold is still valid, otherwise to EXPIRED.
+ */
 const TRANSITIONS: Record<InventoryState, InventoryState[]> = {
   AVAILABLE: ["RESERVED"],
   RESERVED: ["PURCHASED", "EXPIRED"],
-  PURCHASED: [],
+  PURCHASED: ["RESERVED", "EXPIRED"],
   EXPIRED: [],
 };
 
@@ -53,6 +56,14 @@ export function createInventoryStateMachine(
   const clearExpiryTimer = (itemId: string) => {
     clearTimeout(expiryTimers.get(itemId));
     expiryTimers.delete(itemId);
+  };
+
+  const armExpiryTimer = (itemId: string, delayMs: number) => {
+    clearExpiryTimer(itemId);
+    expiryTimers.set(
+      itemId,
+      setTimeout(() => expire(itemId), delayMs),
+    );
   };
 
   const expire = (itemId: string) => {
@@ -89,10 +100,7 @@ export function createInventoryStateMachine(
       })),
       locks: [lock, ...snapshot.locks],
     });
-    expiryTimers.set(
-      itemId,
-      setTimeout(() => expire(itemId), holdDurationMs),
-    );
+    armExpiryTimer(itemId, holdDurationMs);
     return { ok: true, lock };
   };
 
@@ -118,6 +126,47 @@ export function createInventoryStateMachine(
     return { ok: true, lock: purchased };
   };
 
+  const rollbackCheckout = (purchased: ReservationLock) => {
+    // The lock is gone if the store was reset while the payment was pending
+    if (!snapshot.locks.includes(purchased)) return;
+    const { itemId } = purchased;
+    const stillHeld = Date.now() < purchased.expiresAt;
+    const status: InventoryState = stillHeld ? "RESERVED" : "EXPIRED";
+    if (!canTransition(purchased.status, status)) return;
+
+    commit({
+      items: updateItem(itemId, (it) => ({
+        ...it,
+        stock: it.stock + 1,
+        reservedStock: it.reservedStock + (stillHeld ? 1 : 0),
+      })),
+      locks: replaceLock(purchased, { ...purchased, status }),
+    });
+    if (stillHeld) armExpiryTimer(itemId, purchased.expiresAt - Date.now());
+  };
+
+  /**
+   * Optimistic checkout: the UI shows PURCHASED immediately, then the payment call
+   * either confirms it or the purchase is rolled back.
+   */
+  const checkoutOptimistic = async (
+    itemId: string,
+    processPayment: (lock: ReservationLock) => Promise<void>,
+  ): Promise<TransitionResult> => {
+    const result = confirmCheckout(itemId);
+    if (!result.ok) return result;
+    try {
+      await processPayment(result.lock);
+      return result;
+    } catch (error) {
+      rollbackCheckout(result.lock);
+      return {
+        ok: false,
+        reason: error instanceof Error ? error.message : "Thanh toán thất bại",
+      };
+    }
+  };
+
   const dispose = () => {
     expiryTimers.forEach(clearTimeout);
     expiryTimers.clear();
@@ -138,6 +187,7 @@ export function createInventoryStateMachine(
     },
     reserveStock,
     confirmCheckout,
+    checkoutOptimistic,
     reset,
     dispose,
   };

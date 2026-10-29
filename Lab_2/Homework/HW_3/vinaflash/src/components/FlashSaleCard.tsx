@@ -143,12 +143,14 @@ export default function FlashSaleCard({
 
         <button
           onClick={() => onReserve(item.id)}
-          disabled={ended || held || avail <= 0}
+          disabled={phase !== "LIVE" || held || avail <= 0}
           className="block w-full rounded bg-red-600 py-2 font-medium text-white disabled:cursor-not-allowed disabled:bg-zinc-400"
         >
           {ended
             ? "Đã kết thúc"
-            : held
+            : upcoming
+              ? "Sắp mở bán"
+              : held
               ? "Đang giữ hàng"
               : avail > 0
                 ? `Giữ hàng (${HOLD_DURATION_MS / 1000}s)`

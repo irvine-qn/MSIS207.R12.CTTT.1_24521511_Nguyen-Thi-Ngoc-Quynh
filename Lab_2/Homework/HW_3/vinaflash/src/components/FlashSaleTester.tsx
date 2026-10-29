@@ -1,30 +1,21 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-import type { ReservationLock } from "@/types/flashSale";
 import { mockProducts } from "@/data/mockProducts";
-import { createAntiDriftTimer } from "@/engine/antiDriftTimer";
 import { createInventoryStateMachine } from "@/engine/inventoryStateMachine";
 import { createMockPayment } from "@/engine/mockPaymentApi";
+import { lockKey } from "@/engine/reservation";
+import { createSaleWindow } from "@/engine/saleSchedule";
+import { useSaleCountdown } from "@/hooks/useSaleCountdown";
 import FlashSaleCard, {
   formatCountdownMs,
   formatVnd,
-  statusStyle,
 } from "@/components/FlashSaleCard";
 import HoldCountdown from "@/components/HoldCountdown";
-
-const SALE_DURATION_MS = 5 * 60_000;
-
-const PAYMENT_FAILURE_OPTIONS = [
-  { label: "Luôn thành công", value: 0 },
-  { label: "Lỗi ngẫu nhiên 30%", value: 0.3 },
-  { label: "Luôn thất bại", value: 1 },
-];
+import DebugPanel from "@/components/DebugPanel";
 
 const initialStockById = new Map(mockProducts.map((p) => [p.id, p.stock]));
 const noopSubscribe = () => () => {};
-
-const lockKey = (lock: ReservationLock) => `${lock.itemId}-${lock.lockedAt}`;
 
 export default function FlashSaleTester() {
   const isClient = useSyncExternalStore(
@@ -55,27 +46,15 @@ function FlashSaleTesterContent() {
   } | null>(null);
   const [failureRate, setFailureRate] = useState(0.3);
   const [pendingKeys, setPendingKeys] = useState<Set<string>>(new Set());
-  const [saleEndsAt, setSaleEndsAt] = useState(
-    () => Date.now() + SALE_DURATION_MS,
-  );
-  const [saleRemaining, setSaleRemaining] = useState(SALE_DURATION_MS);
-  const saleEnded = saleRemaining <= 0;
-
-  useEffect(
-    () =>
-      createAntiDriftTimer(
-        Math.max(0, saleEndsAt - Date.now()),
-        setSaleRemaining,
-      ),
-    [saleEndsAt],
-  );
+  const [saleWindow, setSaleWindow] = useState(() => createSaleWindow());
+  const { phase, remaining } = useSaleCountdown(saleWindow);
 
   useEffect(() => machine.dispose, [machine]);
 
   const itemOf = (id: string) => items.find((i) => i.id === id);
 
   const reserve = (itemId: string) => {
-    if (saleEnded) return;
+    if (phase !== "LIVE") return;
     const result = machine.reserveStock(itemId);
     setMessage(result.ok ? null : { tone: "error", text: result.reason });
   };
@@ -111,9 +90,10 @@ function FlashSaleTesterContent() {
     machine.reset();
     setMessage(null);
     setPendingKeys(new Set());
-    setSaleRemaining(SALE_DURATION_MS);
-    setSaleEndsAt(Date.now() + SALE_DURATION_MS);
+    setSaleWindow(createSaleWindow());
   };
+
+  const startNow = () => setSaleWindow(createSaleWindow(Date.now(), 0));
 
   const cartLocks = locks.filter(
     (l) => l.status === "RESERVED" || pendingKeys.has(lockKey(l)),
@@ -132,10 +112,14 @@ function FlashSaleTesterContent() {
         </div>
         <div className="text-right">
           <p className="text-xs uppercase opacity-90">
-            {saleEnded ? "Flash sale" : "Kết thúc sau"}
+            {phase === "UPCOMING"
+              ? `Mở bán lúc ${new Date(saleWindow.startsAt).toLocaleTimeString("vi-VN")} · còn`
+              : phase === "LIVE"
+                ? "Đang mở bán · kết thúc sau"
+                : "Flash sale"}
           </p>
           <p className="rounded bg-black/30 px-3 py-1 font-mono text-2xl font-bold tabular-nums">
-            {saleEnded ? "Đã kết thúc" : formatCountdownMs(saleRemaining)}
+            {phase === "ENDED" ? "Đã kết thúc" : formatCountdownMs(remaining)}
           </p>
         </div>
       </header>
@@ -156,7 +140,7 @@ function FlashSaleTesterContent() {
               key={item.id}
               item={item}
               initialStock={initialStockById.get(item.id) ?? item.stock}
-              endsAt={saleEndsAt}
+              saleWindow={saleWindow}
               held={locks.some(
                 (l) => l.itemId === item.id && l.status === "RESERVED",
               )}
@@ -213,70 +197,15 @@ function FlashSaleTesterContent() {
         </aside>
       </div>
 
-      <details className="rounded-lg border p-4 text-sm">
-        <summary className="cursor-pointer font-semibold">
-          Bảng debug ({locks.length} ReservationLock)
-        </summary>
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <label className="flex items-center gap-2">
-            Cổng thanh toán giả lập:
-            <select
-              value={failureRate}
-              onChange={(e) => setFailureRate(Number(e.target.value))}
-              className="rounded border px-2 py-1"
-            >
-              {PAYMENT_FAILURE_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button
-            onClick={reset}
-            className="rounded border px-3 py-1 hover:bg-zinc-100"
-          >
-            Reset flash sale
-          </button>
-        </div>
-        {locks.length > 0 && (
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="border-b">
-                <tr>
-                  <th className="py-2">Item</th>
-                  <th>lockedAt</th>
-                  <th>expiresAt</th>
-                  <th>status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {locks.map((lock) => (
-                  <tr key={lockKey(lock)} className="border-b">
-                    <td className="py-2">
-                      {itemOf(lock.itemId)?.name ?? lock.itemId}
-                    </td>
-                    <td>
-                      {new Date(lock.lockedAt).toLocaleTimeString("vi-VN")}
-                    </td>
-                    <td>
-                      {new Date(lock.expiresAt).toLocaleTimeString("vi-VN")}
-                    </td>
-                    <td>
-                      <span
-                        className={`rounded px-2 py-0.5 text-xs font-medium ${statusStyle[lock.status]}`}
-                      >
-                        {lock.status}
-                        {pendingKeys.has(lockKey(lock)) && " (chờ xác nhận)"}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </details>
+      <DebugPanel
+        locks={locks}
+        pendingKeys={pendingKeys}
+        itemName={(id) => itemOf(id)?.name ?? id}
+        failureRate={failureRate}
+        onFailureRateChange={setFailureRate}
+        onStartNow={startNow}
+        onReset={reset}
+      />
     </div>
   );
 }
