@@ -21,3 +21,6 @@ export const isLockExpired = (
   lock: ReservationLock,
   now: number = Date.now(),
 ): boolean => lock.status === "RESERVED" && now >= lock.expiresAt;
+
+export const lockKey = (lock: ReservationLock): string =>
+  `${lock.itemId}-${lock.lockedAt}`;
