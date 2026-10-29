@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { QUEUE_ENTRY_TTL_MS } from "@/config/audio";
 import type { AudioTaskQueue } from "@/engine/AudioTaskQueue";
 import type { TrackMetadata } from "@/types/audio";
 
@@ -54,6 +55,15 @@ export default function TrackQueueUI({
 }: TrackQueueUIProps) {
   const [entries, setEntries] = useState<QueueEntry[]>([]);
   const [selectedId, setSelectedId] = useState(tracks[0]?.id ?? "");
+  const removalTimersRef = useRef(new Set<number>());
+
+  useEffect(() => {
+    const timers = removalTimersRef.current;
+    return () => {
+      timers.forEach((id) => window.clearTimeout(id));
+      timers.clear();
+    };
+  }, []);
 
   const isProcessing = entries.some(
     (e) => e.status === "downloading" || e.status === "decoding",
@@ -65,6 +75,16 @@ export default function TrackQueueUI({
     );
   }
 
+  /** Marks an entry as done and removes it from the list after a short delay. */
+  function finishEntry(key: number, status: EntryStatus): void {
+    setStatus(key, status);
+    const timerId = window.setTimeout(() => {
+      removalTimersRef.current.delete(timerId);
+      setEntries((prev) => prev.filter((e) => e.key !== key));
+    }, QUEUE_ENTRY_TTL_MS);
+    removalTimersRef.current.add(timerId);
+  }
+
   function enqueueTrack(): void {
     const track = tracks.find((t) => t.id === selectedId);
     if (!track) return;
@@ -74,11 +94,11 @@ export default function TrackQueueUI({
     getQueue()
       .enqueue(track.url, (phase) => setStatus(key, phase))
       .then((buffer) => {
-        setStatus(key, "ready");
+        finishEntry(key, "ready");
         onReady?.(track, buffer);
       })
       .catch((err: unknown) =>
-        setStatus(key, isAbortError(err) ? "cancelled" : "error"),
+        finishEntry(key, isAbortError(err) ? "cancelled" : "error"),
       );
   }
 

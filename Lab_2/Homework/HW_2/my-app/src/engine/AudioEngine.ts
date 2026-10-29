@@ -1,5 +1,8 @@
-/** fftSize 512 gives 256 frequency bins. */
-const FFT_SIZE = 512;
+import { DEFAULT_FFT_BINS } from "@/config/audio";
+import type { FftBins } from "@/types/audio";
+
+/** An AnalyserNode yields fftSize / 2 frequency bins. */
+const binsToFftSize = (bins: FftBins): number => bins * 2;
 
 /**
  * Owns the single AudioContext and AnalyserNode for the app and wires
@@ -34,7 +37,7 @@ export class AudioEngine {
     if (!this.context) {
       this.context = new AudioContext();
       this.analyser = this.context.createAnalyser();
-      this.analyser.fftSize = FFT_SIZE;
+      this.analyser.fftSize = binsToFftSize(DEFAULT_FFT_BINS);
       this.analyser.connect(this.context.destination);
     }
     return this.context;
@@ -43,6 +46,10 @@ export class AudioEngine {
   getAnalyser(): AnalyserNode {
     this.getContext();
     return this.analyser!;
+  }
+
+  setFftBins(bins: FftBins): void {
+    this.getAnalyser().fftSize = binsToFftSize(bins);
   }
 
   /** Number of frequency bins (fftSize / 2). */

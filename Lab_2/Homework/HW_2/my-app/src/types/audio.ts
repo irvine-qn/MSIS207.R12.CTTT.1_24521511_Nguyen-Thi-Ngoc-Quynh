@@ -1,3 +1,5 @@
+import type { FFT_BIN_OPTIONS } from "@/config/audio";
+
 export interface AudioTask {
   trackUrl: string;
   controller: AbortController;
@@ -10,11 +12,12 @@ export interface TrackMetadata {
   title: string;
   artist: string;
   url: string;
-  duration: number;
+  /** Seconds. Unknown until the file is decoded, so it is filled in at runtime. */
+  duration?: number;
   coverUrl: string;
 }
 
-export type FftBins = 256 | 512;
+export type FftBins = (typeof FFT_BIN_OPTIONS)[number];
 
 export interface VisualizerConfig {
   fftBins: FftBins;
