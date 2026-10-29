@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   },
   cacheComponents: true,
   partialPrefetching: true,
+  productionBrowserSourceMaps: true,
 };
 
 export default nextConfig;
