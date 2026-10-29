@@ -1,33 +1,17 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState, useSyncExternalStore } from "react";
-import type { InventoryState } from "@/types/flashSale";
 import { mockProducts } from "@/data/mockProducts";
-import { availableStock } from "@/engine/reservation";
 import { createAntiDriftTimer } from "@/engine/antiDriftTimer";
-import {
-  HOLD_DURATION_MS,
-  createInventoryStateMachine,
-} from "@/engine/inventoryStateMachine";
+import { createInventoryStateMachine } from "@/engine/inventoryStateMachine";
+import FlashSaleCard, {
+  formatCountdownMs,
+  statusStyle,
+} from "@/components/FlashSaleCard";
 
-const SALE_DURATION_MS = 60_000;
+const SALE_DURATION_MS = 5 * 60_000;
 
-const vnd = (n: number) => n.toLocaleString("vi-VN") + "₫";
-
-const formatCountdown = (ms: number) => {
-  const totalSeconds = Math.ceil(ms / 1000);
-  const mm = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
-  const ss = String(totalSeconds % 60).padStart(2, "0");
-  return `${mm}:${ss}`;
-};
-
-const statusStyle: Record<InventoryState, string> = {
-  AVAILABLE: "bg-emerald-100 text-emerald-800",
-  RESERVED: "bg-amber-100 text-amber-800",
-  PURCHASED: "bg-sky-100 text-sky-800",
-  EXPIRED: "bg-zinc-200 text-zinc-700",
-};
+const initialStockById = new Map(mockProducts.map((p) => [p.id, p.stock]));
 
 export default function FlashSaleTester() {
   const [machine] = useState(() => createInventoryStateMachine(mockProducts));
@@ -38,18 +22,23 @@ export default function FlashSaleTester() {
   );
   const [message, setMessage] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
+  const [saleEndsAt, setSaleEndsAt] = useState(
+    () => Date.now() + SALE_DURATION_MS,
+  );
   const [saleRemaining, setSaleRemaining] = useState(SALE_DURATION_MS);
-  const [saleRound, setSaleRound] = useState(0);
   const saleEnded = saleRemaining <= 0;
 
   useEffect(
-    () => createAntiDriftTimer(SALE_DURATION_MS, setSaleRemaining),
-    [saleRound],
+    () =>
+      createAntiDriftTimer(
+        Math.max(0, saleEndsAt - Date.now()),
+        setSaleRemaining,
+      ),
+    [saleEndsAt],
   );
 
   useEffect(() => machine.dispose, [machine]);
 
-  // Display-only clock for the per-lock countdown; expiry itself is driven by the state machine
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 250);
     return () => clearInterval(id);
@@ -70,7 +59,7 @@ export default function FlashSaleTester() {
     machine.reset();
     setMessage(null);
     setSaleRemaining(SALE_DURATION_MS);
-    setSaleRound((r) => r + 1);
+    setSaleEndsAt(Date.now() + SALE_DURATION_MS);
   };
 
   const nameOf = (id: string) => items.find((i) => i.id === id)?.name ?? id;
@@ -84,11 +73,11 @@ export default function FlashSaleTester() {
         >
           {saleEnded
             ? "Đã kết thúc"
-            : `Kết thúc sau ${formatCountdown(saleRemaining)}`}
+            : `Kết thúc sau ${formatCountdownMs(saleRemaining)}`}
         </div>
         <button
           onClick={reset}
-          className="rounded border px-3 py-1.5 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800"
+          className="rounded border px-3 py-1.5 text-sm hover:bg-zinc-100"
         >
           Reset
         </button>
@@ -101,70 +90,18 @@ export default function FlashSaleTester() {
       )}
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map((item) => {
-          const avail = availableStock(item);
-          const held = locks.some(
-            (l) => l.itemId === item.id && l.status === "RESERVED",
-          );
-          const state: InventoryState = held
-            ? "RESERVED"
-            : avail > 0
-              ? "AVAILABLE"
-              : "PURCHASED";
-          return (
-            <article
-              key={item.id}
-              className="overflow-hidden rounded-lg border"
-            >
-              <Image
-                src={item.imageUrl}
-                alt={item.name}
-                width={400}
-                height={300}
-                unoptimized
-                className="h-40 w-full object-cover"
-              />
-              <div className="space-y-2 p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <h2 className="font-semibold">{item.name}</h2>
-                  <span className="rounded bg-red-600 px-2 py-0.5 text-xs font-bold text-white">
-                    -{item.discountPercent}%
-                  </span>
-                </div>
-                <p>
-                  <span className="text-lg font-bold text-red-600">
-                    {vnd(item.salePrice)}
-                  </span>{" "}
-                  <span className="text-sm text-zinc-500 line-through">
-                    {vnd(item.originalPrice)}
-                  </span>
-                </p>
-                <p className="text-sm">
-                  stock: <b>{item.stock}</b> · reserved:{" "}
-                  <b>{item.reservedStock}</b> · available: <b>{avail}</b>
-                </p>
-                <span
-                  className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${statusStyle[state]}`}
-                >
-                  {state}
-                </span>
-                <button
-                  onClick={() => reserve(item.id)}
-                  disabled={saleEnded || held || avail <= 0}
-                  className="block w-full rounded bg-red-600 py-2 font-medium text-white disabled:cursor-not-allowed disabled:bg-zinc-400"
-                >
-                  {saleEnded
-                    ? "Đã kết thúc"
-                    : held
-                      ? "Đang giữ hàng"
-                      : avail > 0
-                        ? `Giữ hàng (${HOLD_DURATION_MS / 1000}s)`
-                        : "Hết hàng"}
-                </button>
-              </div>
-            </article>
-          );
-        })}
+        {items.map((item) => (
+          <FlashSaleCard
+            key={item.id}
+            item={item}
+            initialStock={initialStockById.get(item.id) ?? item.stock}
+            endsAt={saleEndsAt}
+            held={locks.some(
+              (l) => l.itemId === item.id && l.status === "RESERVED",
+            )}
+            onReserve={reserve}
+          />
+        ))}
       </section>
 
       <section>
