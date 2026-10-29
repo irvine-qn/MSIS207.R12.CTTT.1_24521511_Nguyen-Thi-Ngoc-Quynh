@@ -1,26 +1,37 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type RefObject } from "react";
 import type { VisualizerConfig } from "@/types/audio";
 
 interface AudioVisualizerProps {
   analyser: AnalyserNode | null;
   config: VisualizerConfig;
+  isPlaying: boolean;
   className?: string;
   ariaLabel?: string;
 }
 
 const DECAY = 0.85;
 
+function stopLoop(frameIdRef: RefObject<number | null>): void {
+  if (frameIdRef.current !== null) {
+    cancelAnimationFrame(frameIdRef.current);
+    frameIdRef.current = null;
+  }
+}
+
 export default function AudioVisualizer({
   analyser,
   config,
+  isPlaying,
   className,
   ariaLabel = "Biểu đồ tần số âm thanh",
 }: AudioVisualizerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const analyserRef = useRef(analyser);
   const configRef = useRef(config);
+  const animationFrameIdRef = useRef<number | null>(null);
+  const drawRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     analyserRef.current = analyser;
@@ -53,10 +64,9 @@ export default function AudioVisualizer({
 
     let data = new Uint8Array(0);
     let smoothed = new Float32Array(0);
-    let frame = 0;
 
     const draw = () => {
-      frame = requestAnimationFrame(draw);
+      animationFrameIdRef.current = requestAnimationFrame(draw);
       g.clearRect(0, 0, width, height);
 
       const node = analyserRef.current;
@@ -103,13 +113,20 @@ export default function AudioVisualizer({
       }
       g.fill();
     };
-    draw();
+    drawRef.current = draw;
 
     return () => {
-      cancelAnimationFrame(frame);
+      stopLoop(animationFrameIdRef);
+      drawRef.current = null;
       observer.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+    if (!isPlaying || !drawRef.current) return;
+    drawRef.current();
+    return () => stopLoop(animationFrameIdRef);
+  }, [isPlaying]);
 
   return (
     <canvas
