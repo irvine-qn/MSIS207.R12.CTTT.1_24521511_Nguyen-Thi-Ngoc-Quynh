@@ -7,14 +7,24 @@ import type {
   InventoryState,
   ReservationLock,
 } from "@/types/flashSale";
-import { flashSaleItems } from "@/data/flashSaleItems";
+import { mockProducts } from "@/data/mockProducts";
 import {
   availableStock,
   createLock,
   isLockExpired,
 } from "@/engine/reservation";
+import { createAntiDriftTimer } from "@/engine/antiDriftTimer";
+
+const SALE_DURATION_MS = 60_000;
 
 const vnd = (n: number) => n.toLocaleString("vi-VN") + "₫";
+
+const formatCountdown = (ms: number) => {
+  const totalSeconds = Math.ceil(ms / 1000);
+  const mm = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+  const ss = String(totalSeconds % 60).padStart(2, "0");
+  return `${mm}:${ss}`;
+};
 
 const statusStyle: Record<InventoryState, string> = {
   AVAILABLE: "bg-emerald-100 text-emerald-800",
@@ -24,16 +34,23 @@ const statusStyle: Record<InventoryState, string> = {
 };
 
 export default function FlashSaleTester() {
-  const [items, setItems] = useState<FlashSaleItem[]>(flashSaleItems);
+  const [items, setItems] = useState<FlashSaleItem[]>(mockProducts);
   const [locks, setLocks] = useState<ReservationLock[]>([]);
   const [now, setNow] = useState(() => Date.now());
+  const [saleRemaining, setSaleRemaining] = useState(SALE_DURATION_MS);
+  const [saleRound, setSaleRound] = useState(0);
+  const saleEnded = saleRemaining <= 0;
+
+  useEffect(
+    () => createAntiDriftTimer(SALE_DURATION_MS, setSaleRemaining),
+    [saleRound],
+  );
 
   const locksRef = useRef(locks);
   useEffect(() => {
     locksRef.current = locks;
   }, [locks]);
 
-  // Tick every 250ms: update countdowns, expire timed-out locks and release their reserved stock
   useEffect(() => {
     const id = setInterval(() => {
       const t = Date.now();
@@ -56,7 +73,7 @@ export default function FlashSaleTester() {
   }, []);
 
   const reserve = (item: FlashSaleItem) => {
-    if (availableStock(item) <= 0) return;
+    if (saleEnded || availableStock(item) <= 0) return;
     setItems((its) =>
       its.map((it) =>
         it.id === item.id ? { ...it, reservedStock: it.reservedStock + 1 } : it,
@@ -80,8 +97,10 @@ export default function FlashSaleTester() {
   };
 
   const reset = () => {
-    setItems(flashSaleItems);
+    setItems(mockProducts);
     setLocks([]);
+    setSaleRemaining(SALE_DURATION_MS);
+    setSaleRound((r) => r + 1);
   };
 
   const nameOf = (id: string) => items.find((i) => i.id === id)?.name ?? id;
@@ -90,6 +109,13 @@ export default function FlashSaleTester() {
     <div className="mx-auto w-full max-w-5xl space-y-8 p-6">
       <header className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">VinaFlash ⚡ Test</h1>
+        <div
+          className={`rounded px-3 py-1.5 font-mono text-lg font-bold ${saleEnded ? "bg-zinc-200 text-zinc-700" : "bg-red-600 text-white"}`}
+        >
+          {saleEnded
+            ? "Đã kết thúc"
+            : `Kết thúc sau ${formatCountdown(saleRemaining)}`}
+        </div>
         <button
           onClick={reset}
           className="rounded border px-3 py-1.5 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800"
@@ -146,10 +172,14 @@ export default function FlashSaleTester() {
                 </span>
                 <button
                   onClick={() => reserve(item)}
-                  disabled={avail <= 0}
+                  disabled={saleEnded || avail <= 0}
                   className="block w-full rounded bg-red-600 py-2 font-medium text-white disabled:cursor-not-allowed disabled:bg-zinc-400"
                 >
-                  {avail > 0 ? "Giữ hàng (10s)" : "Hết hàng"}
+                  {saleEnded
+                    ? "Đã kết thúc"
+                    : avail > 0
+                      ? "Giữ hàng (10s)"
+                      : "Hết hàng"}
                 </button>
               </div>
             </article>
