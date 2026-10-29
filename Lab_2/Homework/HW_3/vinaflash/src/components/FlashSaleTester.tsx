@@ -12,8 +12,25 @@ import FlashSaleCard, {
 const SALE_DURATION_MS = 5 * 60_000;
 
 const initialStockById = new Map(mockProducts.map((p) => [p.id, p.stock]));
+const noopSubscribe = () => () => {};
 
 export default function FlashSaleTester() {
+  const isClient = useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  );
+  if (!isClient) {
+    return (
+      <p className="p-6 text-center text-sm text-zinc-500">
+        Đang tải flash sale...
+      </p>
+    );
+  }
+  return <FlashSaleTesterContent />;
+}
+
+function FlashSaleTesterContent() {
   const [machine] = useState(() => createInventoryStateMachine(mockProducts));
   const { items, locks } = useSyncExternalStore(
     machine.subscribe,
