@@ -7,7 +7,7 @@ export interface MockPaymentOptions {
 
 export function createMockPayment({
   latencyMs = 1200,
-  failureRate = 0.3,
+  failureRate = 0,
 }: MockPaymentOptions = {}) {
   return (lock: ReservationLock): Promise<void> =>
     new Promise((resolve, reject) => {
@@ -15,7 +15,7 @@ export function createMockPayment({
         if (Math.random() < failureRate) {
           reject(
             new Error(
-              `Thanh toán thất bại cho ${lock.itemId}, đã hoàn tác đơn hàng`,
+              `Cổng thanh toán từ chối giao dịch (${lock.itemId}), đơn hàng đã được hoàn tác`,
             ),
           );
         } else {

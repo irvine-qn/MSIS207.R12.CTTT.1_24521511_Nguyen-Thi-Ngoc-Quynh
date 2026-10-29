@@ -44,7 +44,7 @@ function FlashSaleTesterContent() {
     tone: "success" | "error";
     text: string;
   } | null>(null);
-  const [failureRate, setFailureRate] = useState(0.3);
+  const [failureRate, setFailureRate] = useState(0);
   const [pendingKeys, setPendingKeys] = useState<Set<string>>(new Set());
   const [saleWindow, setSaleWindow] = useState(() => createSaleWindow());
   const { phase, remaining } = useSaleCountdown(saleWindow);
@@ -82,7 +82,10 @@ function FlashSaleTesterContent() {
             tone: "success",
             text: `Đặt hàng thành công: ${itemOf(itemId)?.name ?? itemId}`,
           }
-        : { tone: "error", text: result.reason },
+        : {
+            tone: "error",
+            text: `${itemOf(itemId)?.name ?? itemId}: ${result.reason}`,
+          },
     );
   };
 
@@ -141,9 +144,7 @@ function FlashSaleTesterContent() {
               item={item}
               initialStock={initialStockById.get(item.id) ?? item.stock}
               saleWindow={saleWindow}
-              held={locks.some(
-                (l) => l.itemId === item.id && l.status === "RESERVED",
-              )}
+              held={cartLocks.some((l) => l.itemId === item.id)}
               onReserve={reserve}
             />
           ))}
