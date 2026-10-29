@@ -11,18 +11,25 @@ export class AudioEngine {
   private context: AudioContext | null = null;
   private analyser: AnalyserNode | null = null;
   private source: AudioBufferSourceNode | null = null;
+  private startedAt = 0;
+  private startOffset = 0;
 
   private constructor() {}
+
+  get isActive(): boolean {
+    return this.source !== null;
+  }
+
+  getCurrentTime(): number {
+    if (!this.context || !this.source) return 0;
+    return this.context.currentTime - this.startedAt + this.startOffset;
+  }
 
   static getInstance(): AudioEngine {
     AudioEngine.instance ??= new AudioEngine();
     return AudioEngine.instance;
   }
 
-  /**
-   * Created lazily: browsers only allow an AudioContext to start after a
-   * user gesture, and `window` does not exist during server rendering.
-   */
   getContext(): AudioContext {
     if (!this.context) {
       this.context = new AudioContext();
@@ -43,16 +50,15 @@ export class AudioEngine {
     return this.getAnalyser().frequencyBinCount;
   }
 
-  /** Fills `target` with the current frequency data (0–255 per bin). */
   getFrequencyData(target: Uint8Array<ArrayBuffer>): void {
     this.analyser?.getByteFrequencyData(target);
   }
 
-  /**
-   * Plays a decoded buffer from `offset` seconds, replacing whatever is
-   * playing. Resolves `onEnded` only when the track finishes on its own.
-   */
-  async play(buffer: AudioBuffer, offset = 0, onEnded?: () => void): Promise<void> {
+  async play(
+    buffer: AudioBuffer,
+    offset = 0,
+    onEnded?: () => void,
+  ): Promise<void> {
     const ctx = this.getContext();
     await ctx.resume();
     this.stopAndClean();
@@ -68,6 +74,8 @@ export class AudioEngine {
     };
     source.start(0, offset);
     this.source = source;
+    this.startedAt = ctx.currentTime;
+    this.startOffset = offset;
   }
 
   async pause(): Promise<void> {
@@ -78,7 +86,6 @@ export class AudioEngine {
     await this.context?.resume();
   }
 
-  /** Stops the current source and detaches it so it can be garbage-collected. */
   stopAndClean(): void {
     const source = this.source;
     if (!source) return;
@@ -86,14 +93,11 @@ export class AudioEngine {
     source.onended = null;
     try {
       source.stop();
-    } catch {
-      // Already stopped.
-    }
+    } catch {}
     source.disconnect();
     source.buffer = null;
   }
 
-  /** Releases everything, including the AudioContext itself. */
   async dispose(): Promise<void> {
     this.stopAndClean();
     this.analyser?.disconnect();

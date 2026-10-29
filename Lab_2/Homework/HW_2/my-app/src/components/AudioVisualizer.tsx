@@ -73,7 +73,7 @@ export default function AudioVisualizer({
       if (!node) return;
 
       const { fftBins, barWidth, barGap, colorTheme } = configRef.current;
-      if (node.fftSize !== fftBins) node.fftSize = fftBins;
+      if (node.fftSize !== fftBins * 2) node.fftSize = fftBins * 2;
       if (data.length !== node.frequencyBinCount) {
         data = new Uint8Array(node.frequencyBinCount);
       }
