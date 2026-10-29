@@ -1,4 +1,4 @@
-import type { ColumnDef } from "@/types/data-grid-contract";
+import type { ColumnDef, FilterOption } from "@/types/data-grid-contract";
 import type { Asset } from "@/types/portfolio";
 
 export const mockAssets: Asset[] = [
@@ -148,11 +148,63 @@ export const mockAssets: Asset[] = [
   },
 ];
 
+const usd = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 4,
+});
+
+const percent = new Intl.NumberFormat("en-US", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+const signedPercent = new Intl.NumberFormat("en-US", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+  signDisplay: "exceptZero",
+});
+
 export const columns: ColumnDef<Asset>[] = [
-  { header: "Symbol", accessorKey: "symbol", sortable: true },
-  { header: "Name", accessorKey: "name", sortable: true },
-  { header: "Price", accessorKey: "price", sortable: true },
-  { header: "24h Change (%)", accessorKey: "change24h", sortable: true },
-  { header: "Allocation (%)", accessorKey: "allocation", sortable: true },
-  { header: "ID", accessorKey: "id", sortable: true },
+  {
+    header: "Ticker",
+    accessorKey: "symbol",
+    sortable: true,
+    cell: (asset) => <strong>{asset.symbol}</strong>,
+  },
+  { header: "Asset Name", accessorKey: "name", sortable: true },
+  {
+    header: "Price ($)",
+    accessorKey: "price",
+    sortable: true,
+    cell: (asset) => usd.format(asset.price),
+    cellClassName: () => "text-right tabular-nums",
+  },
+  {
+    header: "24h Change (%)",
+    accessorKey: "change24h",
+    sortable: true,
+    cell: (asset) => `${signedPercent.format(asset.change24h)}%`,
+    cellClassName: (asset) =>
+      `text-right tabular-nums ${
+        asset.change24h > 0
+          ? "text-[#22C55E]"
+          : asset.change24h < 0
+            ? "text-[#F87171]"
+            : ""
+      }`,
+  },
+  {
+    header: "Allocation (%)",
+    accessorKey: "allocation",
+    sortable: true,
+    cell: (asset) => `${percent.format(asset.allocation)}%`,
+    cellClassName: () => "text-right tabular-nums",
+  },
+];
+
+export const statusFilters: FilterOption<Asset>[] = [
+  { label: "Gainers", predicate: (asset) => asset.change24h > 0 },
+  { label: "Losers", predicate: (asset) => asset.change24h < 0 },
 ];
