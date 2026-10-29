@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { DataGrid } from "@/components/ui/DataGrid";
-import { columns, mockAssets } from "@/data/mockAssets";
+import { columns, mockAssets, statusFilters } from "@/data/mockAssets";
 import type { Asset } from "@/types/portfolio";
 
 const getAssetId = (asset: Asset) => asset.id;
@@ -19,6 +19,7 @@ export default function Home() {
         columns={columns}
         onRowSelect={setSelectedAsset}
         getRowId={getAssetId}
+        filterOptions={statusFilters}
         ariaLabel="Enterprise Stock and Crypto Portfolio"
       />
 
