@@ -7,6 +7,7 @@ export class AudioTaskQueue {
   private queue: AudioTask[] = [];
   private isProcessing = false;
   private activeController: AbortController | null = null;
+  private activeTrackUrl: string | null = null;
   private phaseListeners = new WeakMap<AudioTask, PhaseListener>();
 
   constructor(private readonly audioContext: BaseAudioContext) {}
@@ -34,6 +35,21 @@ export class AudioTaskQueue {
     this.activeController = null;
   }
 
+  /** Cancels every task for `trackUrl`, whether it is running or still waiting. */
+  cancelTask(trackUrl: string): void {
+    const remaining: AudioTask[] = [];
+    for (const task of this.queue) {
+      if (task.trackUrl !== trackUrl) {
+        remaining.push(task);
+        continue;
+      }
+      task.controller.abort();
+      task.reject(new DOMException("Task was cancelled", "AbortError"));
+    }
+    this.queue = remaining;
+    if (this.activeTrackUrl === trackUrl) this.cancelCurrentTask();
+  }
+
   clearQueue(): void {
     const pending = this.queue;
     this.queue = [];
@@ -52,6 +68,7 @@ export class AudioTaskQueue {
 
     this.isProcessing = true;
     this.activeController = task.controller;
+    this.activeTrackUrl = task.trackUrl;
     const { signal } = task.controller;
     let data: ArrayBuffer | null = null;
     const onPhase = this.phaseListeners.get(task);
@@ -75,6 +92,7 @@ export class AudioTaskQueue {
       data = null;
       task = null;
       this.activeController = null;
+      this.activeTrackUrl = null;
       this.isProcessing = false;
       void this.processNext();
     }

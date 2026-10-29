@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type RefObject } from "react";
+import { BAR_DECAY, BAR_MAX_RADIUS } from "@/config/audio";
 import type { VisualizerConfig } from "@/types/audio";
 
 interface AudioVisualizerProps {
@@ -10,8 +11,6 @@ interface AudioVisualizerProps {
   className?: string;
   ariaLabel?: string;
 }
-
-const DECAY = 0.85;
 
 function stopLoop(frameIdRef: RefObject<number | null>): void {
   if (frameIdRef.current !== null) {
@@ -40,8 +39,8 @@ export default function AudioVisualizer({
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const g = canvas?.getContext("2d");
-    if (!canvas || !g) return;
+    const canvasCtx = canvas?.getContext("2d");
+    if (!canvas || !canvasCtx) return;
 
     let width = 0;
     let height = 0;
@@ -55,7 +54,7 @@ export default function AudioVisualizer({
       height = rect.height;
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
-      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      canvasCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
       gradient = null;
     };
     resize();
@@ -67,13 +66,13 @@ export default function AudioVisualizer({
 
     const draw = () => {
       animationFrameIdRef.current = requestAnimationFrame(draw);
-      g.clearRect(0, 0, width, height);
+      canvasCtx.clearRect(0, 0, width, height);
 
       const node = analyserRef.current;
       if (!node) return;
 
-      const { fftBins, barWidth, barGap, colorTheme } = configRef.current;
-      if (node.fftSize !== fftBins * 2) node.fftSize = fftBins * 2;
+      // fftBins is applied by AudioEngine; the buffer follows the node's bin count.
+      const { barWidth, barGap, colorTheme } = configRef.current;
       if (data.length !== node.frequencyBinCount) {
         data = new Uint8Array(node.frequencyBinCount);
       }
@@ -84,18 +83,18 @@ export default function AudioVisualizer({
       if (smoothed.length !== barCount) smoothed = new Float32Array(barCount);
 
       if (!gradient || gradientColor !== colorTheme) {
-        gradient = g.createLinearGradient(0, height, 0, 0);
+        gradient = canvasCtx.createLinearGradient(0, height, 0, 0);
         gradient.addColorStop(0, colorTheme);
         // Fade the bar tips when the color is #rrggbb; other formats stay solid.
         const isHex = /^#[0-9a-f]{6}$/i.test(colorTheme);
         gradient.addColorStop(1, isHex ? `${colorTheme}55` : colorTheme);
         gradientColor = colorTheme;
       }
-      g.fillStyle = gradient;
+      canvasCtx.fillStyle = gradient;
 
       const binsPerBar = data.length / barCount;
-      const radius = Math.min(barWidth / 2, 3);
-      g.beginPath();
+      const radius = Math.min(barWidth / 2, BAR_MAX_RADIUS);
+      canvasCtx.beginPath();
       for (let i = 0; i < barCount; i++) {
         const start = Math.floor(i * binsPerBar);
         const end = Math.max(start + 1, Math.floor((i + 1) * binsPerBar));
@@ -105,13 +104,13 @@ export default function AudioVisualizer({
 
         const prev = smoothed[i] ?? 0;
         const value =
-          target > prev ? target : prev * DECAY + target * (1 - DECAY);
+          target > prev ? target : prev * BAR_DECAY + target * (1 - BAR_DECAY);
         smoothed[i] = value;
 
         const h = Math.max(1, value * height);
-        g.roundRect(i * step, height - h, barWidth, h, [radius, radius, 0, 0]);
+        canvasCtx.roundRect(i * step, height - h, barWidth, h, [radius, radius, 0, 0]);
       }
-      g.fill();
+      canvasCtx.fill();
     };
     drawRef.current = draw;
 
