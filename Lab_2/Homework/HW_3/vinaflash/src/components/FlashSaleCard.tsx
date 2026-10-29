@@ -151,10 +151,10 @@ export default function FlashSaleCard({
             : upcoming
               ? "Sắp mở bán"
               : held
-              ? "Đang giữ hàng"
-              : avail > 0
-                ? `Giữ hàng (${HOLD_DURATION_MS / 1000}s)`
-                : "Hết hàng"}
+                ? "Đang giữ hàng"
+                : avail > 0
+                  ? `Giữ hàng (${HOLD_DURATION_MS / 1000}s)`
+                  : "Hết hàng"}
         </button>
       </div>
     </article>
