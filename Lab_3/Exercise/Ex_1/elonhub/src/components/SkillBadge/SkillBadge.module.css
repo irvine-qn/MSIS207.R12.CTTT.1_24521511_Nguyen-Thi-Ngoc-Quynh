@@ -11,3 +11,10 @@
   color: #000000;
   font-weight: 400;
 }
+
+@media (max-width: 375px) {
+  .badge {
+    padding: 0.25rem 0.625rem;
+    font-size: 0.8125rem;
+  }
+}
