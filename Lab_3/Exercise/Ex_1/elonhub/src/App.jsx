@@ -17,7 +17,7 @@ const developer = {
   name: "Elon Musk",
   title: "CEO",
   bio: "Founder of SpaceX and Tesla, building rockets and electric cars to make humanity multiplanetary.",
-  avatarUrl: "/Elon_Musk_-_54820081119_(3x4_cropped,_Rule_of_thirds).jpg.webp",
+  avatarUrl: "/elon-musk.jpg",
   details: [
     { label: "Company", value: "SpaceX" },
     { label: "Hobbies", value: "Eating bun bo Hue and going to Mars" },
@@ -36,7 +36,11 @@ const developer = {
 };
 
 function App() {
-  return <DeveloperCard {...developer} />;
+  return (
+    <main>
+      <DeveloperCard {...developer} />
+    </main>
+  );
 }
 
 export default App;
