@@ -8,6 +8,8 @@
 
 - Commit 1: 'feat(ex1): implement semantic DeveloperCard and SkillBadge'
 - Commit 2: 'style(ex1): add responsive 375px CSS module'.
+- Lưu ý: cập nhật ít nhất 10 commits
+- Bài tập nộp trước 17h 30/10/2026
 
 ---
 
