@@ -17,10 +17,6 @@
 
 # 2. Các yếu tố UI:
 
-- Màu sắc UI:
-
-  + phải tuân thủ theo hình ảnh tôi đã gửi về UI
-  + không tự ý thêm/sửa CSS trừ khi được tôi yêu cầu
 - File màu phải nằm trong nhóm color palette sau:
 
   - #000000
