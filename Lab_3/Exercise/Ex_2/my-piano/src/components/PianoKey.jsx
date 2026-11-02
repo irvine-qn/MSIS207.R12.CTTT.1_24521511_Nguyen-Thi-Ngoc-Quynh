@@ -21,7 +21,6 @@ function PianoKey({
     <button
       type="button"
       className={className}
-      aria-label={`${noteName}, MIDI ${midi}, ${freqHz.toFixed(2)} Hz${shortcut ? `, key ${shortcut}` : ""}`}
       aria-pressed={isPressed}
       onPointerDown={() => onPress?.(midi)}
       onPointerUp={() => onRelease?.(midi)}
@@ -29,6 +28,9 @@ function PianoKey({
     >
       {shortcut && <kbd className={styles.shortcut}>{shortcut}</kbd>}
       <span className={styles.note}>{noteName}</span>
+      <span className={styles.srOnly}>
+        , MIDI {midi}, {freqHz.toFixed(2)} Hz
+      </span>
     </button>
   );
 }

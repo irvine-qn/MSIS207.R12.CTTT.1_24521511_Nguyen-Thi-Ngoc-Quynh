@@ -64,6 +64,7 @@
   border: 2px solid var(--color-primary);
   border-radius: 8px;
   font: inherit;
+  color: var(--text);
   background: var(--color-surface);
 }
 

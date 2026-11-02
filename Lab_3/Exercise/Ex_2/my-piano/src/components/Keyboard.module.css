@@ -1,8 +1,8 @@
 .scroll {
-  --white-key-width: 28px;
-  --white-key-height: 140px;
-  --black-key-width: 18px;
-  --black-key-height: 88px;
+  --white-key-width: 40px;
+  --white-key-height: 170px;
+  --black-key-width: 26px;
+  --black-key-height: 105px;
 
   width: 100%;
   margin-top: 16px;
