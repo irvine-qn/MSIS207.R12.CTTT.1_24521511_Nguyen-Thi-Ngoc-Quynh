@@ -1,16 +1,33 @@
+import { useCallback, useState } from "react";
 import pianoIcon from "./assets/piano.svg";
 import styles from "./App.module.css";
 import { generateKeys } from "./utils/generateKeys";
-import PianoKey from "./components/PianoKey";
+import Keyboard from "./components/Keyboard";
 
 const KEYS = generateKeys();
 
 function App() {
   const whiteKeys = KEYS.filter((key) => !key.isBlack);
   const blackCount = KEYS.length - whiteKeys.length;
-  const blackAfter = new Map(
-    KEYS.filter((key) => key.isBlack).map((key) => [key.midi - 1, key]),
-  );
+  const [pressedSet, setPressedSet] = useState(() => new Set());
+
+  const handlePress = useCallback((midi) => {
+    setPressedSet((prev) => {
+      if (prev.has(midi)) return prev;
+      const next = new Set(prev);
+      next.add(midi);
+      return next;
+    });
+  }, []);
+
+  const handleRelease = useCallback((midi) => {
+    setPressedSet((prev) => {
+      if (!prev.has(midi)) return prev;
+      const next = new Set(prev);
+      next.delete(midi);
+      return next;
+    });
+  }, []);
 
   return (
     <main className={styles.app}>
@@ -40,29 +57,12 @@ function App() {
             <dd>{blackCount}</dd>
           </div>
         </dl>
-        <div className={styles.keyboardScroll}>
-          <ul className={styles.keyboard} aria-label="Piano keyboard">
-            {whiteKeys.map((key) => {
-              const blackKey = blackAfter.get(key.midi);
-              return (
-                <li key={key.id} className={styles.whiteKey}>
-                  <PianoKey
-                    midi={key.midi}
-                    freqHz={key.freqHz}
-                    isBlack={key.isBlack}
-                  />
-                  {blackKey && (
-                    <PianoKey
-                      midi={blackKey.midi}
-                      freqHz={blackKey.freqHz}
-                      isBlack={blackKey.isBlack}
-                    />
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+        <Keyboard
+          keys={KEYS}
+          pressedSet={pressedSet}
+          onPress={handlePress}
+          onRelease={handleRelease}
+        />
       </section>
     </main>
   );

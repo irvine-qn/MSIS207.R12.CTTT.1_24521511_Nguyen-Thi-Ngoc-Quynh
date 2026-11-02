@@ -1,0 +1,27 @@
+.scroll {
+  --white-key-width: 28px;
+  --white-key-height: 140px;
+  --black-key-width: 18px;
+  --black-key-height: 88px;
+
+  width: 100%;
+  margin-top: 16px;
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 2px solid var(--color-primary);
+  background: var(--color-primary);
+}
+
+.keyboard {
+  display: flex;
+  width: max-content;
+  margin: 0;
+  padding: 8px;
+  list-style: none;
+}
+
+.slot {
+  position: relative;
+  flex: 0 0 var(--white-key-width);
+  height: var(--white-key-height);
+}
