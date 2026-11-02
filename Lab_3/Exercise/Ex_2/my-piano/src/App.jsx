@@ -1,6 +1,7 @@
 import pianoIcon from "./assets/piano.svg";
 import styles from "./App.module.css";
 import { generateKeys } from "./utils/generateKeys";
+import PianoKey from "./components/PianoKey";
 
 const KEYS = generateKeys();
 
@@ -45,16 +46,16 @@ function App() {
               const blackKey = blackAfter.get(key.midi);
               return (
                 <li key={key.id} className={styles.whiteKey}>
-                  <button
-                    type="button"
-                    className={styles.whiteButton}
-                    aria-label={`MIDI ${key.midi}, ${key.freqHz.toFixed(2)} Hz`}
+                  <PianoKey
+                    midi={key.midi}
+                    freqHz={key.freqHz}
+                    isBlack={key.isBlack}
                   />
                   {blackKey && (
-                    <button
-                      type="button"
-                      className={styles.blackButton}
-                      aria-label={`MIDI ${blackKey.midi}, ${blackKey.freqHz.toFixed(2)} Hz`}
+                    <PianoKey
+                      midi={blackKey.midi}
+                      freqHz={blackKey.freqHz}
+                      isBlack={blackKey.isBlack}
                     />
                   )}
                 </li>
