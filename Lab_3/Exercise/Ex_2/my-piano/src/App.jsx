@@ -12,6 +12,8 @@ import {
 import { midiToNoteName } from "./utils/midiToNoteName";
 import { useAudioContext } from "./hooks/useAudioContext";
 import { useAudioEngine } from "./hooks/useAudioEngine";
+import { useSequencer } from "./hooks/useSequencer";
+import SequencerControls from "./components/SequencerControls";
 
 const KEYS = generateKeys();
 const INITIAL_SHIFTS = Object.fromEntries(
@@ -26,6 +28,16 @@ function App() {
   const heldCodesRef = useRef(new Map());
   const { audioState, getAudioContext } = useAudioContext();
   const { noteOn, noteOff } = useAudioEngine(getAudioContext);
+  const {
+    status,
+    speed,
+    events,
+    setSpeed,
+    recordPress,
+    recordRelease,
+    startRecording,
+    stop,
+  } = useSequencer();
   const { codeToMidi, midiToLabel } = useMemo(
     () => buildKeyMaps(octaveShifts),
     [octaveShifts],
@@ -34,6 +46,7 @@ function App() {
   const handlePress = useCallback(
     (midi) => {
       noteOn(midi);
+      recordPress(midi);
       setPressedSet((prev) => {
         if (prev.has(midi)) return prev;
         const next = new Set(prev);
@@ -41,12 +54,13 @@ function App() {
         return next;
       });
     },
-    [noteOn],
+    [noteOn, recordPress],
   );
 
   const handleRelease = useCallback(
     (midi) => {
       noteOff(midi);
+      recordRelease(midi);
       setPressedSet((prev) => {
         if (!prev.has(midi)) return prev;
         const next = new Set(prev);
@@ -54,7 +68,7 @@ function App() {
         return next;
       });
     },
-    [noteOff],
+    [noteOff, recordRelease],
   );
 
   const shiftZone = useCallback((zoneId, step) => {
@@ -171,6 +185,26 @@ function App() {
           onPress={handlePress}
           onRelease={handleRelease}
         />
+      </section>
+      <section className={styles.panel} aria-labelledby="sequencer-heading">
+        <h2 id="sequencer-heading">Sequencer</h2>
+        <SequencerControls
+          status={status}
+          speed={speed}
+          onRecord={startRecording}
+          onStop={stop}
+          onSpeedChange={setSpeed}
+        />
+        <ol className={styles.eventList} aria-label="Recorded events">
+          {events.map((event) => (
+            <li key={event.id} className={styles.eventItem}>
+              <span>{midiToNoteName(event.midi)}</span>
+              <span>{event.freqHz.toFixed(2)} Hz</span>
+              <span>delta {event.deltaMs} ms</span>
+              <span>duration {event.durationMs} ms</span>
+            </li>
+          ))}
+        </ol>
       </section>
     </main>
   );

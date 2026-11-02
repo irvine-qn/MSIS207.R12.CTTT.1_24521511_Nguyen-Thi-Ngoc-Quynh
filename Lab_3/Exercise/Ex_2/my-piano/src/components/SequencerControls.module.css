@@ -1,0 +1,79 @@
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--color-secondary);
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.button,
+.record {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  font: inherit;
+  color: var(--color-surface);
+  background: var(--color-primary);
+  cursor: pointer;
+}
+
+.record {
+  background: var(--color-accent);
+}
+
+.button:disabled,
+.record:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.select {
+  padding: 6px 8px;
+  border: 2px solid var(--color-primary);
+  border-radius: 8px;
+  font: inherit;
+  background: var(--color-surface);
+}
+
+.status {
+  padding: 4px 12px;
+  border-radius: 999px;
+  color: var(--color-surface);
+  background: var(--color-primary);
+}
+
+.status[data-status="recording"] {
+  background: var(--color-accent);
+}

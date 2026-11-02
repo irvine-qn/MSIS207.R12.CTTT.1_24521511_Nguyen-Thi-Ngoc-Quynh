@@ -110,3 +110,26 @@
   color: var(--color-surface);
   background: var(--color-primary);
 }
+
+.eventList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 240px;
+  margin: 16px 0 0;
+  padding: 0 0 0 24px;
+  overflow-y: auto;
+  text-align: left;
+}
+
+.eventItem {
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: var(--color-primary);
+  background: var(--color-secondary);
+}
+
+.eventItem span {
+  display: inline-block;
+  margin-right: 12px;
+}

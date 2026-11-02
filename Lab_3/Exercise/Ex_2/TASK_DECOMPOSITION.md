@@ -1,4 +1,4 @@
-# TASK DECOMPOSITION 
+# TASK DECOMPOSITION
 
 **Project:** 88-Key Polyphonic Synthesizer & Concurrent Audio Sequencer
 
@@ -137,10 +137,10 @@ Mỗi dòng là 1 sub-task độc lập = 1 lần prompt AI = 1 atomic commit.
 
 # 5. Acceptance Criteria Checklist
 
-- [ ] 88 keys được tính bằng công thức MIDI chuẩn, không hardcode.
-- [ ] Profiler xác nhận chỉ 1 key component re-render mỗi lần nhấn.
-- [ ] Audio Engine xử lý tối đa 8 voice đồng thời, không có pop/click.
-- [ ] Nốt thứ 9 lấy đúng voice cũ nhất trong $O(1)$.
+- [X] 88 keys được tính bằng công thức MIDI chuẩn, không hardcode.
+- [X] Profiler xác nhận chỉ 1 key component re-render mỗi lần nhấn.
+- [X] Audio Engine xử lý tối đa 8 voice đồng thời, không có pop/click.
+- [X] Nốt thứ 9 lấy đúng voice cũ nhất trong $O(1)$.
 - [ ] Sequence phát lại chính xác ở `0.5x`, `1.0x`, `2.0x`.
 - [ ] Nhấn "Stop" dừng phát lại ngay qua `AbortController`.
 - [ ] Tối thiểu 10 atomic commits chuẩn Conventional Commits.
