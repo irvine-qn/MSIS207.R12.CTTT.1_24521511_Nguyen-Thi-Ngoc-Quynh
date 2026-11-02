@@ -1,6 +1,13 @@
 .white,
 .black {
-  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 0 0 6px;
+  font-family: var(--sans);
+  line-height: 1;
   cursor: pointer;
   touch-action: none;
 }
@@ -39,4 +46,31 @@
 .black:focus-visible {
   outline: 3px solid var(--color-accent);
   outline-offset: -3px;
+}
+
+.note {
+  font-size: 9px;
+  color: var(--color-primary);
+}
+
+.black .note {
+  font-size: 7px;
+  color: var(--color-surface);
+}
+
+.shortcut {
+  min-width: 16px;
+  padding: 2px;
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--color-surface);
+  background: var(--color-primary);
+}
+
+.black .shortcut {
+  min-width: 14px;
+  font-size: 9px;
+  color: var(--color-accent);
+  background: var(--color-surface);
 }
