@@ -14,6 +14,8 @@
   CỰC KỲ QUAN TRỌNG: CHỈ THỰC HIỆN NỘI DUNG TÔI YÊU CẦU VÀ DỰA VÀO FILE task_decomposition.md ĐỂ THỰC HIỆN NÓ. TUYỆT ĐỐI KHÔNG ĐƯỢC HOÀN THÀNH TOÀN BỘ FILE task_decomposition.md TRONG 1 LẦN.
 - chỉnh sửa lại cmt line trong code nếu nó cực kỳ quan trọng: chỉ đặt chữ, không có các ký tự đặc biệt, ghi ngắn gọn và đầy đủ. Đối với các cmt line ko cần thiết thì xóa đi.
 
+
+
 # 2. Các yếu tố UI:
 
 - File màu phải nằm trong nhóm color palette sau:
@@ -75,6 +77,11 @@
 * **Media Asset Standards**:
 
   * Mọi hình ảnh phải dùng giao thức HTTPS, cung cấp đầy đủ `alt`, `width`, và `height` chính xác để triệt tiêu lỗi đè/nhảy khung hình (**CLS = 0.00**).
+* Quy định về viewport 375px:
+
+  * Chuẩn Viewport Baseline (Mobile-First):Mọi giao diện component phải hiển thị hoàn hảo ở kích thước màn hình 375px trước khi mở rộng lên tablet và desktop.
+  * Tiêu chuẩn Kỹ thuật Bắt buộc:Tuyệt đối không có cuộn ngang. Giao diện tại 375px phải vừa vặn 100% chiều ngang màn hình.
+  * Bố cục linh hoạt: Dùng CSS Custom Properties, Flexbox (flex-wrap: wrap) và CSS Grid linh hoạt (repeat(auto-fit, minmax(280px, 1fr))). Cấm dùng kích thước cố định (width: 500px) gây vỡ khung ở màn hình nhỏ.
 
 # 5. STATE MANAGEMENT, DERIVED STATE & HOOK HYGIENE
 
