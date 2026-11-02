@@ -29,7 +29,7 @@
 
 .title {
   margin: 0;
-  color: var(--color-primary);
+  color: var(--text);
 }
 
 .panel {
@@ -53,12 +53,12 @@
 
 .freqItem dt {
   font-weight: 600;
-  color: var(--color-primary);
+  color: var(--text);
 }
 
 .freqItem dd {
   margin: 4px 0 0;
-  color: var(--color-accent);
+  color: var(--text);
 }
 
 .zoneList {
@@ -82,7 +82,7 @@
 
 .zoneStatus {
   min-width: 140px;
-  color: var(--color-primary);
+  color: var(--text);
   font-weight: 600;
 }
 
@@ -92,7 +92,7 @@
   border: none;
   border-radius: 8px;
   font-size: 18px;
-  color: var(--color-surface);
+  color: var(--text);
   background: var(--color-accent);
   cursor: pointer;
 }
@@ -107,7 +107,7 @@
   margin-bottom: 12px;
   padding: 4px 12px;
   border-radius: 999px;
-  color: var(--color-surface);
+  color: var(--text);
   background: var(--color-primary);
 }
 
@@ -125,7 +125,7 @@
 .eventItem {
   padding: 6px 10px;
   border-radius: 8px;
-  color: var(--color-primary);
+  color: var(--text);
   background: var(--color-secondary);
 }
 

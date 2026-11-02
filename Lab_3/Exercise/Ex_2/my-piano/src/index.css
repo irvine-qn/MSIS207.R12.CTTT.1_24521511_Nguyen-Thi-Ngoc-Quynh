@@ -5,7 +5,7 @@
   --color-accent: #ff7171;
 
   --text: #000000;
-  --text-h: #6c6ebe;
+  --text-h: var(--text);
   --bg: var(--color-surface);
   --border: var(--color-accent);
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;

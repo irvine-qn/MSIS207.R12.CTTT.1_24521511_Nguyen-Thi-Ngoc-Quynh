@@ -35,7 +35,7 @@
   border: none;
   border-radius: 8px;
   font: inherit;
-  color: var(--color-surface);
+  color: var(--text);
   background: var(--color-primary);
   cursor: pointer;
 }
@@ -55,7 +55,7 @@
   align-items: center;
   gap: 8px;
   margin: 0;
-  color: var(--color-primary);
+  color: var(--text);
   font-weight: 600;
 }
 
@@ -70,7 +70,7 @@
 .status {
   padding: 4px 12px;
   border-radius: 999px;
-  color: var(--color-surface);
+  color: var(--text);
   background: var(--color-primary);
 }
 

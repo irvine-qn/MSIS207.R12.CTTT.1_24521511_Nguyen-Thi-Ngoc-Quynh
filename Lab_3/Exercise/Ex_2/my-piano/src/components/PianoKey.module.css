@@ -50,12 +50,12 @@
 
 .note {
   font-size: 9px;
-  color: var(--color-primary);
+  color: var(--text);
 }
 
 .black .note {
   font-size: 7px;
-  color: var(--color-surface);
+  color: var(--text);
 }
 
 .shortcut {
@@ -64,13 +64,13 @@
   border-radius: 4px;
   font-family: var(--mono);
   font-size: 10px;
-  color: var(--color-surface);
+  color: var(--text);
   background: var(--color-primary);
 }
 
 .black .shortcut {
   min-width: 14px;
   font-size: 9px;
-  color: var(--color-accent);
+  color: var(--text);
   background: var(--color-surface);
 }
