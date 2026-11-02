@@ -10,6 +10,7 @@ import {
   getZoneRange,
 } from "./utils/keyboardMap";
 import { midiToNoteName } from "./utils/midiToNoteName";
+import { useAudioContext } from "./hooks/useAudioContext";
 
 const KEYS = generateKeys();
 const INITIAL_SHIFTS = Object.fromEntries(
@@ -22,6 +23,7 @@ function App() {
   const [pressedSet, setPressedSet] = useState(() => new Set());
   const [octaveShifts, setOctaveShifts] = useState(INITIAL_SHIFTS);
   const heldCodesRef = useRef(new Map());
+  const { audioState } = useAudioContext();
   const { codeToMidi, midiToLabel } = useMemo(
     () => buildKeyMaps(octaveShifts),
     [octaveShifts],
@@ -103,6 +105,9 @@ function App() {
       </header>
       <section className={styles.panel} aria-labelledby="keyboard-heading">
         <h2 id="keyboard-heading">Keyboard</h2>
+        <output className={styles.audioStatus} role="status">
+          Audio: {audioState}
+        </output>
         <dl className={styles.freqList}>
           <div className={styles.freqItem}>
             <dt>Total keys</dt>
