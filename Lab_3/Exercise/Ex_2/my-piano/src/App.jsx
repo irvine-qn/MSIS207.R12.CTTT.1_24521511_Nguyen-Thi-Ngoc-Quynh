@@ -11,6 +11,7 @@ import {
 } from "./utils/keyboardMap";
 import { midiToNoteName } from "./utils/midiToNoteName";
 import { useAudioContext } from "./hooks/useAudioContext";
+import { useAudioEngine } from "./hooks/useAudioEngine";
 
 const KEYS = generateKeys();
 const INITIAL_SHIFTS = Object.fromEntries(
@@ -23,29 +24,38 @@ function App() {
   const [pressedSet, setPressedSet] = useState(() => new Set());
   const [octaveShifts, setOctaveShifts] = useState(INITIAL_SHIFTS);
   const heldCodesRef = useRef(new Map());
-  const { audioState } = useAudioContext();
+  const { audioState, getAudioContext } = useAudioContext();
+  const { noteOn, noteOff } = useAudioEngine(getAudioContext);
   const { codeToMidi, midiToLabel } = useMemo(
     () => buildKeyMaps(octaveShifts),
     [octaveShifts],
   );
 
-  const handlePress = useCallback((midi) => {
-    setPressedSet((prev) => {
-      if (prev.has(midi)) return prev;
-      const next = new Set(prev);
-      next.add(midi);
-      return next;
-    });
-  }, []);
+  const handlePress = useCallback(
+    (midi) => {
+      noteOn(midi);
+      setPressedSet((prev) => {
+        if (prev.has(midi)) return prev;
+        const next = new Set(prev);
+        next.add(midi);
+        return next;
+      });
+    },
+    [noteOn],
+  );
 
-  const handleRelease = useCallback((midi) => {
-    setPressedSet((prev) => {
-      if (!prev.has(midi)) return prev;
-      const next = new Set(prev);
-      next.delete(midi);
-      return next;
-    });
-  }, []);
+  const handleRelease = useCallback(
+    (midi) => {
+      noteOff(midi);
+      setPressedSet((prev) => {
+        if (!prev.has(midi)) return prev;
+        const next = new Set(prev);
+        next.delete(midi);
+        return next;
+      });
+    },
+    [noteOff],
+  );
 
   const shiftZone = useCallback((zoneId, step) => {
     setOctaveShifts((prev) => {
@@ -60,7 +70,8 @@ function App() {
     const heldCodes = heldCodesRef.current;
 
     const handleKeyDown = (event) => {
-      if (event.repeat || event.ctrlKey || event.metaKey || event.altKey) return;
+      if (event.repeat || event.ctrlKey || event.metaKey || event.altKey)
+        return;
       const shiftTarget = KEY_ZONES.find(
         (zone) => zone.downCode === event.code || zone.upCode === event.code,
       );
