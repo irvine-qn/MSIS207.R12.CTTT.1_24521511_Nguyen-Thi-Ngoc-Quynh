@@ -1,15 +1,31 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import pianoIcon from "./assets/piano.svg";
 import styles from "./App.module.css";
 import { generateKeys } from "./utils/generateKeys";
 import Keyboard from "./components/Keyboard";
+import {
+  KEY_ZONES,
+  buildKeyMaps,
+  canShiftZone,
+  getZoneRange,
+} from "./utils/keyboardMap";
+import { midiToNoteName } from "./utils/midiToNoteName";
 
 const KEYS = generateKeys();
+const INITIAL_SHIFTS = Object.fromEntries(
+  KEY_ZONES.map((zone) => [zone.id, 0]),
+);
 
 function App() {
   const whiteKeys = KEYS.filter((key) => !key.isBlack);
   const blackCount = KEYS.length - whiteKeys.length;
   const [pressedSet, setPressedSet] = useState(() => new Set());
+  const [octaveShifts, setOctaveShifts] = useState(INITIAL_SHIFTS);
+  const heldCodesRef = useRef(new Map());
+  const { codeToMidi, midiToLabel } = useMemo(
+    () => buildKeyMaps(octaveShifts),
+    [octaveShifts],
+  );
 
   const handlePress = useCallback((midi) => {
     setPressedSet((prev) => {
@@ -28,6 +44,50 @@ function App() {
       return next;
     });
   }, []);
+
+  const shiftZone = useCallback((zoneId, step) => {
+    setOctaveShifts((prev) => {
+      const zone = KEY_ZONES.find((item) => item.id === zoneId);
+      const nextShift = prev[zoneId] + step;
+      if (!canShiftZone(zone, nextShift)) return prev;
+      return { ...prev, [zoneId]: nextShift };
+    });
+  }, []);
+
+  useEffect(() => {
+    const heldCodes = heldCodesRef.current;
+
+    const handleKeyDown = (event) => {
+      if (event.repeat || event.ctrlKey || event.metaKey || event.altKey) return;
+      const shiftTarget = KEY_ZONES.find(
+        (zone) => zone.downCode === event.code || zone.upCode === event.code,
+      );
+      if (shiftTarget) {
+        event.preventDefault();
+        shiftZone(shiftTarget.id, shiftTarget.upCode === event.code ? 1 : -1);
+        return;
+      }
+      const midi = codeToMidi.get(event.code);
+      if (midi === undefined) return;
+      event.preventDefault();
+      heldCodes.set(event.code, midi);
+      handlePress(midi);
+    };
+
+    const handleKeyUp = (event) => {
+      const midi = heldCodes.get(event.code);
+      if (midi === undefined) return;
+      heldCodes.delete(event.code);
+      handleRelease(midi);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [codeToMidi, handlePress, handleRelease, shiftZone]);
 
   return (
     <main className={styles.app}>
@@ -57,9 +117,41 @@ function App() {
             <dd>{blackCount}</dd>
           </div>
         </dl>
+        <ul className={styles.zoneList} aria-label="Octave shift">
+          {KEY_ZONES.map((zone) => {
+            const shift = octaveShifts[zone.id];
+            const { first, last } = getZoneRange(zone, shift);
+            return (
+              <li key={zone.id} className={styles.zoneItem}>
+                <button
+                  type="button"
+                  className={styles.shiftButton}
+                  aria-label={`${zone.name} octave down`}
+                  disabled={!canShiftZone(zone, shift - 1)}
+                  onClick={() => shiftZone(zone.id, -1)}
+                >
+                  -
+                </button>
+                <output className={styles.zoneStatus} role="status">
+                  {zone.name}: {midiToNoteName(first)} - {midiToNoteName(last)}
+                </output>
+                <button
+                  type="button"
+                  className={styles.shiftButton}
+                  aria-label={`${zone.name} octave up`}
+                  disabled={!canShiftZone(zone, shift + 1)}
+                  onClick={() => shiftZone(zone.id, 1)}
+                >
+                  +
+                </button>
+              </li>
+            );
+          })}
+        </ul>
         <Keyboard
           keys={KEYS}
           pressedSet={pressedSet}
+          shortcutMap={midiToLabel}
           onPress={handlePress}
           onRelease={handleRelease}
         />

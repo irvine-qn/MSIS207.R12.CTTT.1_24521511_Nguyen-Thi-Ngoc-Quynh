@@ -1,7 +1,7 @@
 import PianoKey from "./PianoKey";
 import styles from "./Keyboard.module.css";
 
-function Keyboard({ keys, pressedSet, onPress, onRelease }) {
+function Keyboard({ keys, pressedSet, shortcutMap, onPress, onRelease }) {
   const whiteKeys = keys.filter((key) => !key.isBlack);
   const blackAfter = new Map(
     keys.filter((key) => key.isBlack).map((key) => [key.midi - 1, key]),
@@ -19,6 +19,7 @@ function Keyboard({ keys, pressedSet, onPress, onRelease }) {
                 freqHz={key.freqHz}
                 isBlack={key.isBlack}
                 isPressed={pressedSet.has(key.midi)}
+                shortcut={shortcutMap.get(key.midi)}
                 onPress={onPress}
                 onRelease={onRelease}
               />
@@ -28,6 +29,7 @@ function Keyboard({ keys, pressedSet, onPress, onRelease }) {
                   freqHz={blackKey.freqHz}
                   isBlack={blackKey.isBlack}
                   isPressed={pressedSet.has(blackKey.midi)}
+                  shortcut={shortcutMap.get(blackKey.midi)}
                   onPress={onPress}
                   onRelease={onRelease}
                 />
