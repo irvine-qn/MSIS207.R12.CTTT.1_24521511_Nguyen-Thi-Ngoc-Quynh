@@ -13,7 +13,6 @@
 - Trường hợp tạo 1 file mới, phải thông báo tôi về việc này, đồng thời phải so sánh với các file cũ/ các file có tên tương tự để đảm bảo nó có tồn tại hay chưa. Nếu nó tồn tại thì không được tạo file mới.
   CỰC KỲ QUAN TRỌNG: CHỈ THỰC HIỆN NỘI DUNG TÔI YÊU CẦU VÀ DỰA VÀO FILE task_decomposition.md ĐỂ THỰC HIỆN NÓ. TUYỆT ĐỐI KHÔNG ĐƯỢC HOÀN THÀNH TOÀN BỘ FILE task_decomposition.md TRONG 1 LẦN.
 - chỉnh sửa lại cmt line trong code nếu nó cực kỳ quan trọng: chỉ đặt chữ, không có các ký tự đặc biệt, ghi ngắn gọn và đầy đủ. Đối với các cmt line ko cần thiết thì xóa đi.
-- Khi tạo file .js, phải gắn code vào page.jsx để có thể test nội dung.
 
 # 2. Các yếu tố UI:
 
