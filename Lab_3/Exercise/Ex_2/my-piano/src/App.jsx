@@ -36,8 +36,9 @@ function App() {
     recordPress,
     recordRelease,
     startRecording,
+    play,
     stop,
-  } = useSequencer();
+  } = useSequencer({ noteOn, noteOff });
   const { codeToMidi, midiToLabel } = useMemo(
     () => buildKeyMaps(octaveShifts),
     [octaveShifts],
@@ -192,6 +193,7 @@ function App() {
           status={status}
           speed={speed}
           onRecord={startRecording}
+          onPlay={events.length > 0 ? play : undefined}
           onStop={stop}
           onSpeedChange={setSpeed}
         />
