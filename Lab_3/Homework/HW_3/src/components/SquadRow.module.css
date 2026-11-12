@@ -1,0 +1,34 @@
+.squad {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.25rem;
+  height: 100%;
+  padding: 0 0.75rem 0 0.25rem;
+}
+
+.name {
+  margin: 0;
+  overflow: hidden;
+  font-size: 1rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.75rem;
+  margin: 0;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.stats dt::after {
+  content: ':';
+}
+
+.stats dd {
+  margin: 0 0 0 -0.5rem;
+  font-weight: 700;
+}
