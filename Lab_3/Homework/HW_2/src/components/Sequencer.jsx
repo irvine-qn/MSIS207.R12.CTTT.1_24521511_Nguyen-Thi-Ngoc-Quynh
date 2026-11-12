@@ -1,9 +1,12 @@
+import { useId } from 'react'
 import styles from './Sequencer.module.css'
 
 export default function Sequencer({ status, onRecord, onPlay, onStop }) {
+  const titleId = useId()
+
   return (
-    <section aria-labelledby="sequencer-title" className={styles.sequencer}>
-      <h2 id="sequencer-title">Sequencer</h2>
+    <section aria-labelledby={titleId} className={styles.sequencer}>
+      <h2 id={titleId}>Sequencer</h2>
       <output aria-live="polite" role="status">{status}</output>
       <div className={styles.controls}>
         <button onClick={onRecord} type="button">Record</button>
