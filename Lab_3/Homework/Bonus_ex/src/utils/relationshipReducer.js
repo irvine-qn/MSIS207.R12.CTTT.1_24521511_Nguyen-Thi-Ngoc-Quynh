@@ -23,6 +23,8 @@ export function canTransition(from, to) {
 
 export function relationshipReducer(state, action) {
   switch (action.type) {
+    case 'LOG_EFFORT':
+      return { ...state, effortLog: [...state.effortLog, action.signal] }
     case 'TRANSITION':
       if (!canTransition(state.phase, action.to)) return state
       return { ...state, phase: action.to }
