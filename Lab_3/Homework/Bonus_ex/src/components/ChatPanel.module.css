@@ -1,0 +1,35 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 8px;
+  background: var(--color-surface);
+}
+
+.messages {
+  margin: 0;
+  padding-left: 1.25rem;
+  overflow-wrap: anywhere;
+}
+
+.status {
+  margin: 0;
+  font-style: italic;
+}
+
+.form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form input {
+  flex: 1 1 160px;
+  min-width: 0;
+  padding: 0.5rem;
+  border: 2px solid var(--color-primary);
+  border-radius: 8px;
+  font: inherit;
+}
