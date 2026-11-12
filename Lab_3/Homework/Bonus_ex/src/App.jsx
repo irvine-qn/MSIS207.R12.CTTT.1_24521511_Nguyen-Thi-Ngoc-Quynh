@@ -1,4 +1,7 @@
 import { useReducer } from 'react'
+import ChatPanel from './components/ChatPanel.jsx'
+import EffortForm from './components/EffortForm.jsx'
+import EffortSummary from './components/EffortSummary.jsx'
 import PhaseBadge from './components/PhaseBadge.jsx'
 import { PHASES, canTransition, initialRelationshipState, relationshipReducer } from './utils/relationshipReducer.js'
 import styles from './App.module.css'
@@ -27,7 +30,19 @@ function App() {
         >
           Xác nhận cả hai
         </button>
+        <button
+          type="button"
+          disabled={!canTransition(state.phase, PHASES.GHOSTED_EXIT)}
+          onClick={() => dispatch({ type: 'TRANSITION', to: PHASES.GHOSTED_EXIT })}
+        >
+          Chia tay
+        </button>
       </section>
+      <section className={styles.effort} aria-label="Effort">
+        <EffortForm onLogEffort={(signal) => dispatch({ type: 'LOG_EFFORT', signal })} />
+        <EffortSummary effortLog={state.effortLog} />
+      </section>
+      <ChatPanel phase={state.phase} onGhosted={() => dispatch({ type: 'GHOSTED' })} />
     </main>
   )
 }
