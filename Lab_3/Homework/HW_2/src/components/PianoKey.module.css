@@ -1,0 +1,31 @@
+.key {
+  display: flex;
+  flex: 0 0 3.25rem;
+  align-items: flex-end;
+  justify-content: center;
+  min-height: 10rem;
+  padding: 0.75rem 0.25rem;
+  border: 1px solid #242424;
+  border-radius: 0 0 0.4rem 0.4rem;
+  font: inherit;
+  touch-action: none;
+  user-select: none;
+}
+
+.whiteKey {
+  background: var(--color-surface);
+  color: #242424;
+}
+
+.blackKey {
+  z-index: 1;
+  min-height: 6.5rem;
+  margin-inline: -1rem;
+  background: #242424;
+  color: var(--color-surface);
+}
+
+.pressed {
+  background: var(--color-primary);
+  color: #242424;
+}
