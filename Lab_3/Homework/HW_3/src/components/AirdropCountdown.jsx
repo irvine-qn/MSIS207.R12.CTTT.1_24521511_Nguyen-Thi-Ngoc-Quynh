@@ -19,9 +19,10 @@ const formatClock = (remainingMs) => {
   return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
 }
 
-function AirdropCountdown({ targetEpochMs }) {
+function AirdropCountdown({ targetEpochMs, phase: phaseOverride }) {
   const headingId = useId()
-  const { remainingMs, phase } = usePubgAirdropTimer(targetEpochMs)
+  const { remainingMs, phase: timerPhase } = usePubgAirdropTimer(targetEpochMs)
+  const phase = phaseOverride ?? timerPhase
   const totalSeconds = Math.ceil(remainingMs / 1000)
 
   return (
@@ -34,7 +35,7 @@ function AirdropCountdown({ targetEpochMs }) {
         {PHASE_LABELS[phase]}
       </output>
       <p className={styles.target}>
-        Thả lúc{' '}
+        {phase === 'WARMUP' ? 'Thả lúc' : 'Đóng lúc'}{' '}
         <time dateTime={new Date(targetEpochMs).toISOString()}>
           {new Date(targetEpochMs).toLocaleTimeString('vi-VN')}
         </time>

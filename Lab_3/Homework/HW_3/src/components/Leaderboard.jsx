@@ -4,6 +4,7 @@ import VirtualList from './VirtualList.jsx'
 import styles from './Leaderboard.module.css'
 
 const ROW_HEIGHT_PX = 72
+const VIEWPORT_ROWS = 2
 
 const SORT_OPTIONS = [
   { value: 'wwcdCount', label: 'WWCD' },
@@ -21,13 +22,13 @@ function Leaderboard({ standings = [] }) {
   const [sortKey, setSortKey] = useState('wwcdCount')
 
   const keyword = searchText.trim().toLowerCase()
+  const wwcdThreshold = Number.isNaN(minWwcd) ? 0 : Math.max(0, minWwcd)
   const visibleStandings = standings
-    .filter((squad) => squad.squadName.toLowerCase().includes(keyword) && squad.wwcdCount >= minWwcd)
+    .filter((squad) => squad.squadName.toLowerCase().includes(keyword) && squad.wwcdCount >= wwcdThreshold)
     .toSorted((a, b) => b[sortKey] - a[sortKey] || a.squadName.localeCompare(b.squadName))
 
   const handleMinWwcdChange = (e) => {
-    const value = e.target.valueAsNumber
-    setMinWwcd(Number.isNaN(value) ? 0 : Math.max(0, value))
+    setMinWwcd(e.target.valueAsNumber)
   }
 
   return (
@@ -40,7 +41,7 @@ function Leaderboard({ standings = [] }) {
         </label>
         <label htmlFor={minWwcdId} className={styles.field}>
           WWCD tối thiểu
-          <input id={minWwcdId} type="number" min="0" value={minWwcd} onChange={handleMinWwcdChange} />
+          <input id={minWwcdId} type="number" min="0" value={Number.isNaN(minWwcd) ? '' : minWwcd} onChange={handleMinWwcdChange} />
         </label>
         <label htmlFor={sortId} className={styles.field}>
           Sắp xếp theo
@@ -58,6 +59,8 @@ function Leaderboard({ standings = [] }) {
         <VirtualList
           items={visibleStandings}
           rowHeight={ROW_HEIGHT_PX}
+          viewportRows={VIEWPORT_ROWS}
+          overscan={0}
           getKey={(squad) => squad.squadId}
           renderItem={(squad) => <SquadRow squad={squad} />}
           label="Bảng xếp hạng squad"
