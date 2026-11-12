@@ -1,0 +1,42 @@
+.countdown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid var(--color-primary);
+  border-radius: 12px;
+  background: var(--color-surface);
+}
+
+.heading {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.clock {
+  font-size: clamp(2rem, 10vw, 3.5rem);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.phase {
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  background: var(--color-secondary);
+  font-weight: 600;
+}
+
+.phase[data-phase='AIRDROP_LIVE'] {
+  background: var(--color-primary);
+}
+
+.phase[data-phase='LOOTED_OUT'],
+.phase[data-phase='EXPIRED'] {
+  background: var(--color-accent);
+}
+
+.target {
+  margin: 0;
+}
