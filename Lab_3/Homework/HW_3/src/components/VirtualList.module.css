@@ -1,0 +1,28 @@
+.viewport {
+  position: relative;
+  height: var(--viewport-height);
+  overflow-y: auto;
+  border: 2px solid var(--color-secondary);
+  border-radius: 12px;
+  background: var(--color-surface);
+}
+
+.viewport:focus-visible {
+  outline: 3px solid var(--color-primary);
+}
+
+.rows {
+  box-sizing: border-box;
+  height: var(--total-height);
+  margin: 0;
+  padding: var(--start-offset) 0 0 2.5rem;
+}
+
+.row {
+  height: var(--row-height);
+  border-bottom: 1px solid var(--color-secondary);
+}
+
+.row::marker {
+  font-weight: 700;
+}
