@@ -74,13 +74,13 @@ DATING_NO_LOVE --seen không rep quá 5s / chọn Ai Đó--> GHOSTED_EXIT
 
 ### 2.4 Component Props contract
 
-| Component         | Props                          | Ghi chú                                                   |
-| ----------------- | ------------------------------ | ---------------------------------------------------------- |
-| `PhaseBadge`    | `{ phase }`                  | Hiển thị phase hiện tại                               |
-| `EffortForm`    | `{ onLogEffort }`            | Input ghép `label` qua `useId()`, đọc `valueAsNumber` |
-| `EffortSummary` | `{ effortLog }`              | `<dl>` hiển thị tổng effort EM và AI_DO              |
-| `RedFlagAlert`  | `{ message }`                | `<output role="status" aria-live="polite">`             |
-| `ChatPanel`     | `{ phase, onSend, onGhosted }` | Timer 5s, `AbortController` cleanup                   |
+| Component         | Props                            | Ghi chú                                                       |
+| ----------------- | -------------------------------- | -------------------------------------------------------------- |
+| `PhaseBadge`    | `{ phase }`                    | Hiển thị phase hiện tại                                    |
+| `EffortForm`    | `{ onLogEffort }`              | Input ghép `label` qua `useId()`, đọc `valueAsNumber` |
+| `EffortSummary` | `{ effortLog }`                | `<dl>` hiển thị tổng effort EM và AI_DO                  |
+| `RedFlagAlert`  | `{ message }`                  | `<output role="status" aria-live="polite">`                  |
+| `ChatPanel`     | `{ phase, onSend, onGhosted }` | Timer 5s, `AbortController` cleanup                          |
 
 # 3. Functional Slicing (WBS)
 
@@ -88,48 +88,48 @@ Mỗi dòng là 1 sub-task độc lập = 1 lần prompt AI = 1 atomic commit.
 
 ### Phase 0 - Setup
 
-| ID  | Sub-task                                                               | Kiểm thử                    | Commit                                           |
-| --- | ---------------------------------------------------------------------- | ----------------------------- | ------------------------------------------------ |
-| 0.1 | Khởi tạo project Vite React 19, `createRoot` bọc `<StrictMode>` | `npm run dev` chạy được | `chore(bonus): scaffold vite react 19 project` |
-| 0.2 | Khai báo CSS Custom Properties tại `:root` theo color palette      | Không có inline style       | `style(bonus): add root css custom properties` |
+| ID  | Sub-task                                                               | Kiểm thử                    |
+| --- | ---------------------------------------------------------------------- | ----------------------------- |
+| 0.1 | Khởi tạo project Vite React 19, `createRoot` bọc `<StrictMode>` | `npm run dev` chạy được |
+| 0.2 | Khai báo CSS Custom Properties tại `:root` theo color palette      | Không có inline style       |
 
 ### Phase 1 - Module 1: FSM
 
-| ID  | Sub-task                                                                      | Kiểm thử                                   | Commit                                            |
-| --- | ----------------------------------------------------------------------------- | -------------------------------------------- | ------------------------------------------------- |
-| 1.1 | Tạo contract `RelationshipPhase`, `EffortSignal` (theo tập phase đã chốt) | Khớp đề bài                              | `feat(bonus): define relationship fsm contract` |
-| 1.2 | Reducer thuần với bảng transition hợp lệ                                | Transition sai bị bỏ qua, không mutate  | `feat(bonus): add relationship phase reducer`   |
-| 1.3 | Component `PhaseBadge` thay cho boolean soup                              | Không còn `isDating`, `isLoved`         | `refactor(bonus): replace boolean soup with fsm`|
+| ID  | Sub-task                                                                           | Kiểm thử                                |
+| --- | ---------------------------------------------------------------------------------- | ----------------------------------------- |
+| 1.1 | Tạo contract `RelationshipPhase`, `EffortSignal` (theo tập phase đã chốt) | Khớp đề bài                           |
+| 1.2 | Reducer thuần với bảng transition hợp lệ                                      | Transition sai bị bỏ qua, không mutate |
+| 1.3 | Component `PhaseBadge` thay cho boolean soup                                     | Không còn `isDating`, `isLoved`     |
 
 ### Phase 2 - Module 2: Asymmetric Effort
 
-| ID  | Sub-task                                                                                    | Kiểm thử                                        | Commit                                          |
-| --- | ------------------------------------------------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------- |
-| 2.1 | Action `LOG_EFFORT` thêm signal bằng spread vào `effortLog`                           | Log bất biến, `key={signal.id}`                | `feat(bonus): add immutable effort action log`|
-| 2.2 | Hàm thuần tính tổng effort (`steps * multiplier`) theo actor, derived trong render | 1000 x 0.05 = 50 nhỏ hơn 1 x 100 = 100              | `feat(bonus): derive asymmetric effort score` |
-| 2.3 | Component `EffortForm` dùng `useId()`, `valueAsNumber` + `Number.isNaN`               | Nhập sai không ghép chuỗi                    | `feat(bonus): add accessible effort form`     |
-| 2.4 | Component `EffortSummary` dùng `<dl>`                                                   | Hiển thị đúng 2 actor                        | `feat(bonus): add effort summary list`        |
+| ID  | Sub-task                                                                                 | Kiểm thử                               |
+| --- | ---------------------------------------------------------------------------------------- | ---------------------------------------- |
+| 2.1 | Action `LOG_EFFORT` thêm signal bằng spread vào `effortLog`                       | Log bất biến, `key={signal.id}`      |
+| 2.2 | Hàm thuần tính tổng effort (`steps * multiplier`) theo actor, derived trong render | 1000 x 0.05 = 50 nhỏ hơn 1 x 100 = 100 |
+| 2.3 | Component `EffortForm` dùng `useId()`, `valueAsNumber` + `Number.isNaN`         | Nhập sai không ghép chuỗi            |
+| 2.4 | Component `EffortSummary` dùng `<dl>`                                               | Hiển thị đúng 2 actor                |
 
 ### Phase 3 - Module 3: Ghosting Timer
 
-| ID  | Sub-task                                                                                       | Kiểm thử                                    | Commit                                          |
-| --- | ---------------------------------------------------------------------------------------------- | --------------------------------------------- | ----------------------------------------------- |
-| 3.1 | `ChatPanel` gửi tin nhắn khởi động timer 5s trong `useEffect`, cleanup timer           | Sau 5s không rep chuyển phase              | `feat(bonus): add seen no reply ghost timer`  |
-| 3.2 | `AbortController` hủy promise chờ khi bị ghost hoặc chuyển sang 'Ai Đó', bỏ qua `AbortError` | Không lỗi giả, Memory tab không leak    | `fix(bonus): abort pending reply on ghosting` |
+| ID  | Sub-task                                                                                                 | Kiểm thử                               |
+| --- | -------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| 3.1 | `ChatPanel` gửi tin nhắn khởi động timer 5s trong `useEffect`, cleanup timer                    | Sau 5s không rep chuyển phase          |
+| 3.2 | `AbortController` hủy promise chờ khi bị ghost hoặc chuyển sang 'Ai Đó', bỏ qua `AbortError` | Không lỗi giả, Memory tab không leak |
 
 ### Phase 4 - Module 4: Red-Flag Alert & UI
 
-| ID  | Sub-task                                                                     | Kiểm thử                      | Commit                                            |
-| --- | ---------------------------------------------------------------------------- | ------------------------------- | ------------------------------------------------- |
-| 4.1 | `RedFlagAlert` qua `<output role="status" aria-live="polite">`, message derived từ phase và effort | Screen reader đọc cảnh báo | `feat(bonus): add accessible red flag alert`    |
-| 4.2 | Layout responsive 375px                                                   | Không cuộn ngang ở 375px    | `style(bonus): make analyzer responsive`        |
+| ID  | Sub-task                                                                                                 | Kiểm thử                     |
+| --- | -------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| 4.1 | `RedFlagAlert` qua `<output role="status" aria-live="polite">`, message derived từ phase và effort | Screen reader đọc cảnh báo |
+| 4.2 | Layout responsive 375px                                                                                  | Không cuộn ngang ở 375px    |
 
 ### Phase 5 - Verification & Deliverables
 
-| ID  | Sub-task                                                                                | Kiểm thử                | Commit                                            |
-| --- | --------------------------------------------------------------------------------------- | ------------------------- | ------------------------------------------------- |
-| 5.1 | Kiểm thử FSM, timer, a11y bằng Chrome DevTools, chụp bằng chứng                  | Đạt Acceptance Criteria | `test(bonus): verify fsm timer and a11y`        |
-| 5.2 | Viết `AI_FAILURE_AUDIT.md` tối thiểu 3 lỗi AI kèm bằng chứng và code refactor | Đủ 3 lỗi               | `docs(bonus): add ai failure audit`             |
+| ID  | Sub-task                                                                                | Kiểm thử                |
+| --- | --------------------------------------------------------------------------------------- | ------------------------- |
+| 5.1 | Kiểm thử FSM, timer, a11y bằng Chrome DevTools, chụp bằng chứng                   | Đạt Acceptance Criteria |
+| 5.2 | Viết `AI_FAILURE_AUDIT.md` tối thiểu 3 lỗi AI kèm bằng chứng và code refactor | Đủ 3 lỗi               |
 
 ---
 
