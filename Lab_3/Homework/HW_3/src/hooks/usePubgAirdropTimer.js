@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { getDropPhase } from '../utils/getDropPhase.js'
 
 const getRemainingMs = (targetEpochMs) => Math.max(0, targetEpochMs - Date.now())
 
@@ -8,6 +9,7 @@ export function usePubgAirdropTimer(targetEpochMs) {
   useEffect(() => {
     let timerId = 0
     const tick = () => {
+      clearTimeout(timerId)
       const next = getRemainingMs(targetEpochMs)
       setRemainingMs(next)
       if (next > 0) {
@@ -15,10 +17,20 @@ export function usePubgAirdropTimer(targetEpochMs) {
       }
     }
 
-    tick()
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') tick()
+    }
 
-    return () => clearTimeout(timerId)
+    tick()
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      clearTimeout(timerId)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [targetEpochMs])
 
-  return { remainingMs }
+  const phase = getDropPhase({ warmupRemainingMs: remainingMs })
+
+  return { remainingMs, phase }
 }
