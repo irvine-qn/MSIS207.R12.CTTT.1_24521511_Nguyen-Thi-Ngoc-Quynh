@@ -1,0 +1,14 @@
+.keyboardViewport {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  padding: 0.75rem 0;
+}
+
+.keyboard {
+  display: flex;
+  width: max-content;
+  min-width: 100%;
+  align-items: flex-start;
+  padding-inline: 1rem;
+}
