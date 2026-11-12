@@ -1,133 +1,13 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Interactive Drum Kit" />
-    <link rel="stylesheet" href="style.css" />
     <title>Drum Kit</title>
   </head>
   <body>
-    <main class="container">
-      <h1>Drum Kit</h1>
-
-      <div class="drum-kit">
-        <button
-          type="button"
-          class="key"
-          data-key="65"
-          data-sound="kick"
-          aria-label="Kick drum, A key"
-        >
-          <kbd>A</kbd>
-          <span class="sound">Kick</span>
-        </button>
-
-        <button
-          type="button"
-          class="key"
-          data-key="83"
-          data-sound="snare"
-          aria-label="Snare drum, S key"
-        >
-          <kbd>S</kbd>
-          <span class="sound">Snare</span>
-        </button>
-
-        <button
-          type="button"
-          class="key"
-          data-key="68"
-          data-sound="hihat"
-          aria-label="Closed hi-hat, D key"
-        >
-          <kbd>D</kbd>
-          <span class="sound">Hi-Hat</span>
-        </button>
-
-        <button
-          type="button"
-          class="key"
-          data-key="70"
-          data-sound="clap"
-          aria-label="Clap, F key"
-        >
-          <kbd>F</kbd>
-          <span class="sound">Clap</span>
-        </button>
-
-        <button
-          type="button"
-          class="key"
-          data-key="71"
-          data-sound="openhat"
-          aria-label="Open hi-hat, G key"
-        >
-          <kbd>G</kbd>
-          <span class="sound">Open Hat</span>
-        </button>
-
-        <button
-          type="button"
-          class="key"
-          data-key="72"
-          data-sound="boom"
-          aria-label="Boom, H key"
-        >
-          <kbd>H</kbd>
-          <span class="sound">Boom</span>
-        </button>
-
-        <button
-          type="button"
-          class="key"
-          data-key="74"
-          data-sound="ride"
-          aria-label="Ride cymbal, J key"
-        >
-          <kbd>J</kbd>
-          <span class="sound">Ride</span>
-        </button>
-
-        <button
-          type="button"
-          class="key"
-          data-key="75"
-          data-sound="tom"
-          aria-label="Tom drum, K key"
-        >
-          <kbd>K</kbd>
-          <span class="sound">Tom</span>
-        </button>
-
-        <button
-          type="button"
-          class="key"
-          data-key="76"
-          data-sound="tink"
-          aria-label="Tink percussion, L key"
-        >
-          <kbd>L</kbd>
-          <span class="sound">Tink</span>
-        </button>
-      </div>
-
-      <section class="recorder" aria-label="Beat recorder">
-        <div class="recorder-controls">
-          <button type="button" id="record-button">Start recording</button>
-          <button type="button" id="stop-recording-button" disabled>
-            Stop recording
-          </button>
-          <button type="button" id="replay-button" disabled>Replay</button>
-          <button type="button" id="clear-button" disabled>Clear</button>
-        </div>
-        <p id="recorder-status" class="recorder-status" aria-live="polite">
-          Not recording
-        </p>
-      </section>
-
-      <p class="hint">Keyboard: A S D F G H J K L · You can also click a pad</p>
-    </main>
-    <script type="module" src="./main.js"></script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

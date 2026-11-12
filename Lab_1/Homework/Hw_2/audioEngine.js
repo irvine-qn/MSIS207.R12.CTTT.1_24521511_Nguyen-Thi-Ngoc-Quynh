@@ -1,3 +1,13 @@
+const SOUND_FILES = {
+  kick: "/audio/kick.wav",
+  snare: "/audio/snare.wav",
+  hihat: "/audio/hihat.wav",
+  clap: "/audio/clap.wav",
+  openhat: "/audio/openhat.wav",
+  boom: "/audio/boom.wav",
+  tom: "/audio/tom.wav",
+};
+
 const SOUND_NAMES = new Set([
   "kick",
   "snare",
@@ -23,6 +33,14 @@ class AudioEngine {
     }
 
     try {
+      if (SOUND_FILES[soundName]) {
+        const sample = new Audio(SOUND_FILES[soundName]);
+        sample.play().catch((error) => {
+          console.error(`AudioEngine: Failed to play sound "${soundName}".`, error);
+        });
+        return true;
+      }
+
       const context = this.getAudioContext();
       if (context.state === "suspended") {
         context.resume().catch((error) => {
