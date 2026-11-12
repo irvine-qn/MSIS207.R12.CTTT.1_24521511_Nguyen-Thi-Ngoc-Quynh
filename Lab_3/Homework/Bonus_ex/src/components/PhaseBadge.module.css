@@ -1,0 +1,33 @@
+.badge {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 2px solid var(--color-primary);
+  background: var(--color-surface);
+  max-width: 100%;
+}
+
+.caption {
+  font-size: 0.875rem;
+}
+
+.FRIENDS {
+  background: var(--color-secondary);
+}
+
+.DATING_NO_LOVE {
+  background: var(--color-surface);
+}
+
+.OFFICIAL_LOVE {
+  background: var(--color-primary);
+}
+
+.GHOSTED_EXIT {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+}
