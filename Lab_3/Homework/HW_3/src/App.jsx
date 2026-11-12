@@ -16,13 +16,19 @@ function App() {
   const cratesHeadingId = useId()
   const [dropEpochMs] = useState(() => Date.now() + WARMUP_DURATION_MS)
   const { drops, claim, alertMessage } = useCrateClaim(() => createCrateDrops(dropEpochMs))
-  const { remainingMs: warmupRemainingMs } = usePubgAirdropTimer(dropEpochMs)
-  const { remainingMs: liveRemainingMs } = usePubgAirdropTimer(dropEpochMs + LIVE_DURATION_MS)
+  const closeEpochMs = dropEpochMs + LIVE_DURATION_MS
+  const { remainingMs: liveRemainingMs } = usePubgAirdropTimer(closeEpochMs)
+  const warmupRemainingMs = Math.max(0, liveRemainingMs - LIVE_DURATION_MS)
+  const totalStock = drops.reduce((sum, drop) => sum + drop.remainingStock, 0)
+  const arenaPhase = getDropPhase({ warmupRemainingMs, liveRemainingMs, remainingStock: totalStock })
 
   return (
     <main className={styles.arena}>
       <h1>PUBG VN Airdrop Arena</h1>
-      <AirdropCountdown targetEpochMs={dropEpochMs} />
+      <AirdropCountdown
+        targetEpochMs={arenaPhase === 'WARMUP' ? dropEpochMs : closeEpochMs}
+        phase={arenaPhase}
+      />
       <section className={styles.crates} aria-labelledby={cratesHeadingId}>
         <h2 id={cratesHeadingId} className={styles.sectionHeading}>Crate Drops</h2>
         <output className={styles.alert} role="alert">{alertMessage}</output>

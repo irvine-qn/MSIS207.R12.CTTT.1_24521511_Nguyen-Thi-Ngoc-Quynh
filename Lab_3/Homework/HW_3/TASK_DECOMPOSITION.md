@@ -64,12 +64,12 @@ usePubgAirdropTimer(targetEpochMs) -> { remainingMs, phase }
 
 ### 2.3 Component Props contract
 
-| Component          | Props                                         | Ghi chú                                                         |
-| ------------------ | --------------------------------------------- | ---------------------------------------------------------------- |
-| `AirdropCountdown` | `{ targetEpochMs }`                        | Hiển thị qua `<time>` / `<output>`                          |
-| `CrateCard`      | `{ drop, phase, onClaim }`                  | `<article>`, thông tin dùng `<dl>`, nút disable theo phase |
-| `Leaderboard`    | `{ standings }`                             | Lọc và sắp xếp là derived state trong render              |
-| `SquadRow`       | `{ squad }`                                 | `key={squad.squadId}`                                          |
+| Component            | Props                        | Ghi chú                                                          |
+| -------------------- | ---------------------------- | ----------------------------------------------------------------- |
+| `AirdropCountdown` | `{ targetEpochMs }`        | Hiển thị qua `<time>` / `<output>`                          |
+| `CrateCard`        | `{ drop, phase, onClaim }` | `<article>`, thông tin dùng `<dl>`, nút disable theo phase |
+| `Leaderboard`      | `{ standings }`            | Lọc và sắp xếp là derived state trong render                 |
+| `SquadRow`         | `{ squad }`                | `key={squad.squadId}`                                           |
 
 ### 2.4 State Machine contract (Drop)
 
@@ -84,45 +84,45 @@ Mỗi dòng là 1 sub-task độc lập = 1 lần prompt AI = 1 atomic commit.
 
 ### Phase 0 - Setup
 
-| ID  | Sub-task                                                               | Kiểm thử                    | Commit                                         |
-| --- | ---------------------------------------------------------------------- | ----------------------------- | ---------------------------------------------- |
-| 0.1 | Khởi tạo project Vite React 19, `createRoot` bọc `<StrictMode>` | `npm run dev` chạy được | `chore(hw3): scaffold vite react 19 project` |
-| 0.2 | Khai báo CSS Custom Properties tại `:root` theo color palette      | Không có inline style       | `style(hw3): add root css custom properties` |
-| 0.3 | Tạo file contract `DropPhase`, `PubgCrateDrop`, `PubgVnSquadStanding` | Khớp đề bài              | `feat(hw3): define pubg vn arena contract`   |
+| ID  | Sub-task                                                                     | Kiểm thử                    |
+| --- | ---------------------------------------------------------------------------- | ----------------------------- |
+| 0.1 | Khởi tạo project Vite React 19, `createRoot` bọc `<StrictMode>`       | `npm run dev` chạy được |
+| 0.2 | Khai báo CSS Custom Properties tại `:root` theo color palette            | Không có inline style       |
+| 0.3 | Tạo file contract `DropPhase`, `PubgCrateDrop`, `PubgVnSquadStanding` | Khớp đề bài               |
 
 ### Phase 1 - Module 1: Airdrop Timer
 
-| ID  | Sub-task                                                                                 | Kiểm thử                                    | Commit                                             |
-| --- | ---------------------------------------------------------------------------------------- | --------------------------------------------- | -------------------------------------------------- |
-| 1.1 | Hook `usePubgAirdropTimer` tính `Math.max(0, targetEpochMs - Date.now())`, có cleanup | Đếm đúng, unmount không leak            | `feat(hw3): add zero drift airdrop timer hook`   |
-| 1.2 | Resync khi `visibilitychange`                                                         | Ẩn tab 30s, mở lại thời gian đúng       | `fix(hw3): resync timer on visibilitychange`     |
-| 1.3 | Hàm thuần tính `DropPhase` từ thời gian và stock                                  | Phase đúng theo state machine              | `feat(hw3): derive drop phase from time and stock`|
-| 1.4 | Component `AirdropCountdown` semantic, accessible                                     | Accessibility Tree đúng                    | `feat(hw3): add accessible airdrop countdown`    |
+| ID  | Sub-task                                                                                    | Kiểm thử                              |
+| --- | ------------------------------------------------------------------------------------------- | --------------------------------------- |
+| 1.1 | Hook `usePubgAirdropTimer` tính `Math.max(0, targetEpochMs - Date.now())`, có cleanup | Đếm đúng, unmount không leak       |
+| 1.2 | Resync khi `visibilitychange`                                                             | Ẩn tab 30s, mở lại thời gian đúng |
+| 1.3 | Hàm thuần tính `DropPhase` từ thời gian và stock                                    | Phase đúng theo state machine         |
+| 1.4 | Component `AirdropCountdown` semantic, accessible                                         | Accessibility Tree đúng               |
 
 ### Phase 2 - Module 2: Optimistic Claim
 
-| ID  | Sub-task                                                                                         | Kiểm thử                                  | Commit                                          |
-| --- | ------------------------------------------------------------------------------------------------ | ------------------------------------------- | ----------------------------------------------- |
-| 2.1 | Component `CrateCard` dùng `<article>`, `<dl>`, giá VND qua `Intl.NumberFormat('vi-VN')` | Giá hiển thị dạng `5.000.000 ₫`       | `feat(hw3): add CrateCard with vnd price`     |
-| 2.2 | Optimistic claim trừ `remainingStock` bất biến                                              | Stock giảm ngay khi nhấn               | `feat(hw3): add optimistic crate claim`       |
-| 2.3 | Rollback khi 409 Conflict, thông báo qua `<output role="alert">`                         | Giả lập 409, stock trả về giá trị cũ | `fix(hw3): rollback claim on 409 conflict`    |
-| 2.4 | Request claim dùng `AbortController`, `catch` bỏ qua `AbortError`                       | Unmount khi đang claim không lỗi giả  | `fix(hw3): abort pending claim request`       |
+| ID  | Sub-task                                                                                           | Kiểm thử                                  |
+| --- | -------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| 2.1 | Component `CrateCard` dùng `<article>`, `<dl>`, giá VND qua `Intl.NumberFormat('vi-VN')` | Giá hiển thị dạng `5.000.000 ₫`      |
+| 2.2 | Optimistic claim trừ `remainingStock` bất biến                                                | Stock giảm ngay khi nhấn                  |
+| 2.3 | Rollback khi 409 Conflict, thông báo qua `<output role="alert">`                               | Giả lập 409, stock trả về giá trị cũ |
+| 2.4 | Request claim dùng `AbortController`, `catch` bỏ qua `AbortError`                          | Unmount khi đang claim không lỗi giả    |
 
 ### Phase 3 - Module 3: Leaderboard
 
-| ID  | Sub-task                                                                                           | Kiểm thử                         | Commit                                              |
-| --- | -------------------------------------------------------------------------------------------------- | ---------------------------------- | --------------------------------------------------- |
-| 3.1 | Component `Leaderboard` render squad, `key={squad.squadId}`                                    | Hiển thị 4 squad VN             | `feat(hw3): add pubg vn leaderboard`              |
-| 3.2 | Filter và sort bằng `.filter()`, `.toSorted()` là derived state trong render, control ghép `label` qua `useId()` | Sort đúng theo WWCD, Placement, Kill | `feat(hw3): filter and sort squad standings`   |
-| 3.3 | Tích hợp Virtual List từ Lab 2 HW 3 cho danh sách dài                                   | DOM chỉ render các dòng hiển thị | `perf(hw3): virtualize leaderboard rows`          |
-| 3.4 | Layout responsive 375px                                                                         | Không cuộn ngang ở 375px        | `style(hw3): make arena layout responsive`        |
+| ID  | Sub-task                                                                                                                     | Kiểm thử                             |
+| --- | ---------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| 3.1 | Component `Leaderboard` render squad, `key={squad.squadId}`                                                              | Hiển thị 4 squad VN                  |
+| 3.2 | Filter và sort bằng `.filter()`, `.toSorted()` là derived state trong render, control ghép `label` qua `useId()` | Sort đúng theo WWCD, Placement, Kill |
+| 3.3 | Tích hợp Virtual List từ Lab 2 HW 3 cho danh sách dài                                                                   | DOM chỉ render các dòng hiển thị  |
+| 3.4 | Layout responsive 375px                                                                                                      | Không cuộn ngang ở 375px            |
 
 ### Phase 4 - Verification & Deliverables
 
-| ID  | Sub-task                                                                                | Kiểm thử                | Commit                                          |
-| --- | --------------------------------------------------------------------------------------- | ------------------------- | ----------------------------------------------- |
-| 4.1 | Kiểm thử timer, rollback, leaderboard bằng Chrome DevTools, chụp bằng chứng   | Đạt Acceptance Criteria | `test(hw3): verify timer claim and leaderboard` |
-| 4.2 | Viết `AI_FAILURE_AUDIT.md` tối thiểu 3 lỗi AI kèm bằng chứng và code refactor | Đủ 3 lỗi               | `docs(hw3): add ai failure audit`             |
+| ID  | Sub-task                                                                                | Kiểm thử                |
+| --- | --------------------------------------------------------------------------------------- | ------------------------- |
+| 4.1 | Kiểm thử timer, rollback, leaderboard bằng Chrome DevTools, chụp bằng chứng       | Đạt Acceptance Criteria |
+| 4.2 | Viết `AI_FAILURE_AUDIT.md` tối thiểu 3 lỗi AI kèm bằng chứng và code refactor | Đủ 3 lỗi               |
 
 ---
 

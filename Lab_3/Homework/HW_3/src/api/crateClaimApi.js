@@ -1,8 +1,10 @@
+import { CRATE_DROP_IDS } from '../data/crateDrops.js'
+
 const SERVER_LATENCY_MS = 800
 
 const serverStock = new Map([
-  ['pvs-vip-ticket', 1],
-  ['gcoin-crate', 10],
+  [CRATE_DROP_IDS.vipTicket, 1],
+  [CRATE_DROP_IDS.gcoinCrate, 10],
 ])
 
 export function claimCrateRequest(dropId, { signal } = {}) {
