@@ -26,7 +26,7 @@ function waitForDelay(durationMs, signal) {
 
 export default function App() {
   const { noteOn: playNote, noteOff, pressedSet, stopAll } = usePianoAudio()
-  const [recording, setRecording] = useState(false)
+  const recordingRef = useRef(false)
   const [status, setStatus] = useState('Ready')
   const queueRef = useRef(null)
   const recordedTasksRef = useRef([])
@@ -42,7 +42,7 @@ export default function App() {
     if (!key) return
     playNote(midi, key.freqHz)
 
-    if (recording) {
+    if (recordingRef.current) {
       const now = performance.now()
       const deltaMs = lastTaskTimeRef.current === null ? 0 : now - lastTaskTimeRef.current
       const id = `${midi}-${now}`
@@ -56,7 +56,7 @@ export default function App() {
       recordingStartsRef.current.set(midi, { id, startedAt: now })
       lastTaskTimeRef.current = now
     }
-  }, [playNote, recording])
+  }, [playNote])
 
   const onNoteOff = useCallback((midi) => {
     noteOff(midi)
@@ -73,7 +73,7 @@ export default function App() {
     recordedTasksRef.current = []
     recordingStartsRef.current.clear()
     lastTaskTimeRef.current = null
-    setRecording(true)
+    recordingRef.current = true
     setStatus('Recording')
   }, [])
 
@@ -82,7 +82,7 @@ export default function App() {
     playbackRef.current = null
     playbackTimersRef.current.forEach(window.clearTimeout)
     playbackTimersRef.current.clear()
-    setRecording(false)
+    recordingRef.current = false
     setStatus('Stopped')
     recordingStartsRef.current.forEach(({ id, startedAt }) => {
       const durationMs = performance.now() - startedAt
@@ -97,7 +97,7 @@ export default function App() {
 
   const onPlay = useCallback(async () => {
     onStop()
-    setRecording(false)
+    recordingRef.current = false
     const tasks = recordedTasksRef.current
     if (tasks.length === 0) {
       setStatus('No notes recorded')
