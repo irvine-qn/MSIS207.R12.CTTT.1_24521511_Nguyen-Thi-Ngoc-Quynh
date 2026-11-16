@@ -7,6 +7,7 @@ const navItems = [
   { to: '/', label: 'Home', end: true },
   { to: '/people', label: 'People', end: false },
   { to: '/form', label: 'Form', end: false },
+  { to: '/forum/general', label: 'Forum', end: false },
 ]
 
 export default function Layout() {

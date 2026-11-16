@@ -8,6 +8,7 @@ const PeopleLayout = lazy(() => import('./pages/PeopleLayout.jsx'))
 const PeopleIndex = lazy(() => import('./pages/PeopleIndex.jsx'))
 const PersonDetail = lazy(() => import('./pages/PersonDetail.jsx'))
 const SimpleForm = lazy(() => import('./pages/SimpleForm.jsx'))
+const Forum = lazy(() => import('./pages/Forum.jsx'))
 const NotFound = lazy(() => import('./pages/NotFound.jsx'))
 
 export default function App() {
@@ -34,6 +35,7 @@ export default function App() {
             </Suspense>
           }
         />
+        <Route path="forum/:forumId" element={<Forum />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
