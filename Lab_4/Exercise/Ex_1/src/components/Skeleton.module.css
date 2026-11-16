@@ -1,4 +1,22 @@
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2);
+  align-items: start;
+}
+
+@media (min-width: 48rem) {
+  .grid {
+    grid-template-columns: minmax(280px, 1fr) 2fr;
+  }
+}
+
+.list {
+  min-height: 12rem;
+}
+
 .page,
+.list,
 .detail {
   display: flex;
   flex-direction: column;
