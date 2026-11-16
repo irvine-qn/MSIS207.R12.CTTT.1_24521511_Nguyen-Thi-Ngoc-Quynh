@@ -1,4 +1,3 @@
-
 # TASK_DECOMPOSITION
 
 ## SPRINT 1: ROUTER MIGRATION & MASTER-DETAIL VIEWS
@@ -60,7 +59,4 @@
   * Tạo endpoint `GET /api/messages/:forum` bằng cấu trúc Mongoose 8 (`async/await`, bỏ hoàn toàn callback cũ).
   * Tạo endpoint `POST /api/messages/:forum`. Khởi tạo guard check bắt buộc để validate POST payload đầu vào.
   * Sử dụng `crypto.randomUUID()` tạo mã ID an toàn cho bản ghi mới.
-
-```[cite:
-
-```
+* 
