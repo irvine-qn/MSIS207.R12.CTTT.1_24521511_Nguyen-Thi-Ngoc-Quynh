@@ -7,6 +7,7 @@ const Home = lazy(() => import('./pages/Home.jsx'))
 const PeopleLayout = lazy(() => import('./pages/PeopleLayout.jsx'))
 const PeopleIndex = lazy(() => import('./pages/PeopleIndex.jsx'))
 const PersonDetail = lazy(() => import('./pages/PersonDetail.jsx'))
+const SimpleForm = lazy(() => import('./pages/SimpleForm.jsx'))
 const NotFound = lazy(() => import('./pages/NotFound.jsx'))
 
 export default function App() {
@@ -25,6 +26,7 @@ export default function App() {
           <Route index element={<PeopleIndex />} />
           <Route path=":personId" element={<PersonDetail />} />
         </Route>
+        <Route path="form" element={<SimpleForm />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
