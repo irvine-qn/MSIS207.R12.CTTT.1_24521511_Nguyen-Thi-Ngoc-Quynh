@@ -13,7 +13,9 @@ app.use('/api/messages', messagesRouter)
 
 app.use((err, req, res, next) => {
   console.error(err)
-  res.status(err.status ?? 500).json({ error: err.status === 400 ? 'Invalid JSON body' : 'Internal server error' })
+  const status = err.status ?? 500
+  const message = err.type === 'entity.parse.failed' ? 'Invalid JSON body' : err.expose ? err.message : 'Internal server error'
+  res.status(status).json({ error: message })
 })
 
 process.on('unhandledRejection', (reason) => {
@@ -25,9 +27,20 @@ async function start() {
     console.error('MONGODB_URI is not set')
     process.exit(1)
   }
+  if (!CLIENT_ORIGIN) {
+    console.error('CLIENT_ORIGIN is not set')
+    process.exit(1)
+  }
   try {
     await mongoose.connect(MONGODB_URI)
-    app.listen(PORT, () => console.log(`Server listening on port ${PORT}`))
+    app.listen(PORT, async (err) => {
+      if (err) {
+        console.error(err.code === 'EADDRINUSE' ? `Port ${PORT} is already in use` : 'Could not start server', err)
+        await mongoose.disconnect()
+        process.exit(1)
+      }
+      console.log(`Server listening on port ${PORT}`)
+    })
   } catch (err) {
     console.error('Could not connect to MongoDB', err)
     process.exit(1)

@@ -26,7 +26,14 @@ export default function App() {
           <Route index element={<PeopleIndex />} />
           <Route path=":personId" element={<PersonDetail />} />
         </Route>
-        <Route path="form" element={<SimpleForm />} />
+        <Route
+          path="form"
+          element={
+            <Suspense fallback={<Skeleton variant="people" />}>
+              <SimpleForm />
+            </Suspense>
+          }
+        />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

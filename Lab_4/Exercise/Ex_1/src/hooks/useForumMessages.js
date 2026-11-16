@@ -8,6 +8,10 @@ export function useForumMessages(forum) {
   const [error, setError] = useState(null)
 
   useEffect(() => {
+    if (!forum) {
+      return
+    }
+
     const controller = new AbortController()
 
     async function loadMessages() {
@@ -39,6 +43,10 @@ export function useForumMessages(forum) {
 
     return () => controller.abort()
   }, [forum])
+
+  if (!forum) {
+    return { messages: [], loading: false, error: null }
+  }
 
   return { messages, loading, error }
 }
