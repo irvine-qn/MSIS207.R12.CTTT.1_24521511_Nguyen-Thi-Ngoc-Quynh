@@ -38,7 +38,7 @@ function App() {
           Chia tay
         </button>
       </section>
-      <section className={styles.effort} aria-label="Effort">
+      <section className={styles.effort} aria-label="Công sức">
         <EffortForm onLogEffort={(signal) => dispatch({ type: 'LOG_EFFORT', signal })} />
         <EffortSummary effortLog={state.effortLog} />
       </section>

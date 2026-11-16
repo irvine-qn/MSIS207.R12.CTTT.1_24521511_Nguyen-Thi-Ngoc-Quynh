@@ -14,7 +14,7 @@ function EffortForm({ onLogEffort = () => {} }) {
   const [steps, setSteps] = useState(null)
   const [multiplier, setMultiplier] = useState(null)
 
-  const isValid = steps !== null && steps > 0 && multiplier !== null && multiplier > 0
+  const isValid = Number.isInteger(steps) && steps > 0 && multiplier !== null && multiplier > 0
 
   function handleSubmit(e) {
     e.preventDefault()

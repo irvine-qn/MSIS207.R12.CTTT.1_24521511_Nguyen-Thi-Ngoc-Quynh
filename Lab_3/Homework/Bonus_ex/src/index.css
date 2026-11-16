@@ -20,5 +20,15 @@ body {
 }
 
 button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-primary);
+  font: inherit;
   cursor: pointer;
+}
+
+button:disabled {
+  background: var(--color-secondary);
+  cursor: not-allowed;
 }

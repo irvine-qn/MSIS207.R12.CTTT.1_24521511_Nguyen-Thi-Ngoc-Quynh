@@ -14,8 +14,11 @@
 }
 
 .status {
-  margin: 0;
   font-style: italic;
+}
+
+.status:empty {
+  display: none;
 }
 
 .form {

@@ -47,7 +47,9 @@ function ChatPanel({ phase = 'FRIENDS', onSend = () => {}, onGhosted = () => {} 
           <li key={message.id}>{message.text}</li>
         ))}
       </ol>
-      {isWaiting && <p className={styles.status}>Đã xem, đang chờ rep</p>}
+      <output className={styles.status} role="status" aria-live="polite">
+        {isWaiting ? 'Đã xem, đang chờ rep' : ''}
+      </output>
       <form className={styles.form} onSubmit={handleSubmit}>
         <label htmlFor={messageId}>Tin nhắn</label>
         <input
