@@ -6,6 +6,7 @@ import styles from './Layout.module.css'
 const navItems = [
   { to: '/', label: 'Home', end: true },
   { to: '/people', label: 'People', end: false },
+  { to: '/form', label: 'Form', end: false },
 ]
 
 export default function Layout() {
