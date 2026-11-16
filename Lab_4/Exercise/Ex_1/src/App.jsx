@@ -1,6 +1,7 @@
-import { lazy } from 'react'
+import { lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router'
 import Layout from './components/Layout.jsx'
+import Skeleton from './components/Skeleton.jsx'
 
 const Home = lazy(() => import('./pages/Home.jsx'))
 const PeopleLayout = lazy(() => import('./pages/PeopleLayout.jsx'))
@@ -13,7 +14,14 @@ export default function App() {
     <Routes>
       <Route element={<Layout />}>
         <Route index element={<Home />} />
-        <Route path="people" element={<PeopleLayout />}>
+        <Route
+          path="people"
+          element={
+            <Suspense fallback={<Skeleton variant="people" />}>
+              <PeopleLayout />
+            </Suspense>
+          }
+        >
           <Route index element={<PeopleIndex />} />
           <Route path=":personId" element={<PersonDetail />} />
         </Route>
