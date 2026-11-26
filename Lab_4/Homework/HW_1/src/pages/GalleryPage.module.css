@@ -1,0 +1,12 @@
+.heading {
+  margin: 0 0 0.75rem;
+  font-size: 1.125rem;
+}
+
+.empty {
+  display: block;
+  padding: 1rem;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-muted);
+}
