@@ -1,0 +1,72 @@
+.form {
+  display: grid;
+  gap: 12px;
+}
+
+.form h3 {
+  margin: 0;
+}
+
+.fieldset {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.legend {
+  padding: 0;
+  margin-bottom: 4px;
+  color: var(--color-muted);
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.control {
+  width: 100%;
+  padding: 10px 12px;
+  font: inherit;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+}
+
+.control[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.hint {
+  color: var(--color-muted);
+}
+
+.error {
+  margin: 0;
+  color: var(--color-danger);
+}
+
+.success {
+  color: var(--color-success);
+}
+
+.submit {
+  justify-self: start;
+  padding: 10px 18px;
+  font: inherit;
+  font-weight: 600;
+  color: #ffffff;
+  background: var(--color-accent);
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.submit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
