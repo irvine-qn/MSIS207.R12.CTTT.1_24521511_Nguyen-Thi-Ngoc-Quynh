@@ -1,0 +1,15 @@
+.list {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 8px 16px;
+  margin: 0;
+}
+
+.list dt {
+  color: var(--color-muted);
+}
+
+.list dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
