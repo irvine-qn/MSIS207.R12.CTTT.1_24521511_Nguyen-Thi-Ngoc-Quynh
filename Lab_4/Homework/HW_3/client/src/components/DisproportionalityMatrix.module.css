@@ -1,0 +1,38 @@
+.note {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.scroller {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.table caption {
+  text-align: start;
+  padding-bottom: 8px;
+  color: var(--color-muted);
+}
+
+.table th,
+.table td {
+  padding: 8px;
+  border-bottom: 1px solid var(--color-border);
+  text-align: start;
+  white-space: nowrap;
+}
+
+.flag {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+.ok {
+  color: var(--color-success);
+}
