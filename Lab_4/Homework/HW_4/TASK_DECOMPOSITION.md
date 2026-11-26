@@ -57,3 +57,24 @@ Code nền: Lab_4/Exercise/Ex_1
 - [ ] Bảo vệ lựa chọn state: local / context / URL / server
 - [ ] Tập fix nhanh 1 bug bị cài (VD: thiếu dependency, thiếu abort, dùng `<Switch>`)
 - [ ] Ghi lỗi AI gặp phải vào `AI_FAILURE_AUDIT.md`
+
+### Sơ đồ module
+
+```text
+main.jsx -> BrowserRouter -> AuthProvider -> App
+App -> Layout (nav, Login / Logout)
+  /people        -> PeopleLayout (?q) -> PeopleIndex | PersonDetail
+  /form          -> SimpleForm -> FormContext (useFormEngine) -> InputField, ShowData
+  /login         -> Login -> useAuth, useFormEngine, InputField
+  /forum/:id     -> RequireAuth -> Forum (?page) -> useForumMessages -> sleep -> Express /api/messages
+```
+
+### Lựa chọn state
+
+| State | Nơi lưu | Lý do |
+| :-- | :-- | :-- |
+| Giá trị form, touched | Local qua `useFormEngine`, chia sẻ bằng `FormContext` | Chỉ trang form dùng, errors và isValid là state dẫn xuất |
+| `user` | `AuthContext` | Layout, RequireAuth và Login cùng cần đọc |
+| `q`, `page` | URL qua `useSearchParams` | Reload và chia sẻ link vẫn giữ trạng thái |
+| `forumId` | Route param | Xác định tài nguyên đang xem |
+| Messages | Server, tải qua `useForumMessages` | Dữ liệu nằm ở MongoDB |
