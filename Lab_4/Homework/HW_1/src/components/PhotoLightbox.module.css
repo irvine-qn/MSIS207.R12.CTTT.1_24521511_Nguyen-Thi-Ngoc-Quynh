@@ -1,0 +1,49 @@
+.dialog {
+  inline-size: min(100% - 2rem, 960px);
+  max-block-size: calc(100dvh - 2rem);
+  padding: 0;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.dialog::backdrop {
+  background: rgb(0 0 0 / 0.75);
+}
+
+.content {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.toolbar,
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.image {
+  inline-size: 100%;
+  max-block-size: 70dvh;
+  object-fit: contain;
+}
+
+.button {
+  min-inline-size: 44px;
+  min-block-size: 44px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 1.25rem;
+  cursor: pointer;
+}
