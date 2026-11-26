@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router'
 import Layout from './components/Layout.jsx'
 import Skeleton from './components/Skeleton.jsx'
+import RequireAuth from './components/RequireAuth.jsx'
 
 const Home = lazy(() => import('./pages/Home.jsx'))
 const PeopleLayout = lazy(() => import('./pages/PeopleLayout.jsx'))
@@ -9,7 +10,8 @@ const PeopleIndex = lazy(() => import('./pages/PeopleIndex.jsx'))
 const PersonDetail = lazy(() => import('./pages/PersonDetail.jsx'))
 const SimpleForm = lazy(() => import('./pages/SimpleForm.jsx'))
 const Forum = lazy(() => import('./pages/Forum.jsx'))
-const NotFound = lazy(() => import('./pages/NotFound.jsx'))
+const Login = lazy(() => import('./pages/Login.jsx'))
+const NotFound =lazy(() => import('./pages/NotFound.jsx'))
 
 export default function App() {
   return (
@@ -35,7 +37,15 @@ export default function App() {
             </Suspense>
           }
         />
-        <Route path="forum/:forumId" element={<Forum />} />
+        <Route
+          path="forum/:forumId"
+          element={
+            <RequireAuth>
+              <Forum />
+            </RequireAuth>
+          }
+        />
+        <Route path="login" element={<Login />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

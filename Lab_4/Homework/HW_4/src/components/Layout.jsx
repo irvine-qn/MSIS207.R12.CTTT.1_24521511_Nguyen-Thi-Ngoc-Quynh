@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import { NavLink, Outlet } from 'react-router'
 import Skeleton from './Skeleton.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
 import styles from './Layout.module.css'
 
 const navItems = [
@@ -11,6 +12,8 @@ const navItems = [
 ]
 
 export default function Layout() {
+  const { user, logout } = useAuth()
+
   return (
     <>
       <header className={styles.header}>
@@ -26,6 +29,18 @@ export default function Layout() {
             </NavLink>
           ))}
         </nav>
+        {user ? (
+          <p className={styles.user}>
+            <span>{user.name}</span>
+            <button type="button" onClick={logout}>
+              Logout
+            </button>
+          </p>
+        ) : (
+          <NavLink to="/login" className={styles.login}>
+            Login
+          </NavLink>
+        )}
       </header>
       <main className={styles.main}>
         <Suspense fallback={<Skeleton />}>

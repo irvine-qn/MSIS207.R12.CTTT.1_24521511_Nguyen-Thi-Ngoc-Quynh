@@ -30,3 +30,29 @@
   padding: var(--space-2);
   min-height: calc(100dvh - var(--header-height));
 }
+
+.user,
+.login {
+  margin: 0 0 0 auto;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.login {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.user button {
+  padding: var(--space-1) var(--space-2);
+  font: inherit;
+  color: var(--color-accent);
+  background: none;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
