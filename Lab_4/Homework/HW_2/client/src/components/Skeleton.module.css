@@ -1,0 +1,43 @@
+.card {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.image,
+.title,
+.line {
+  display: block;
+  border-radius: 8px;
+  background: var(--color-border);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.image {
+  aspect-ratio: 3 / 4;
+}
+
+.title {
+  height: 24px;
+  width: 60%;
+}
+
+.line {
+  height: 16px;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image,
+  .title,
+  .line {
+    animation: none;
+  }
+}
