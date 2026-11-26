@@ -1,0 +1,24 @@
+.box {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--color-bg);
+}
+
+.box h3,
+.box p {
+  margin: 0;
+}
+
+.remaining {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.expired {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-danger);
+}
