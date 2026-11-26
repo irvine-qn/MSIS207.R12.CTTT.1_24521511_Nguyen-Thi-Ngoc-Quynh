@@ -9,6 +9,15 @@ Code nền: Lab_4/Exercise/Ex_1
 ### Task 1.1: Xác định state cần đưa lên URL
 * Liệt kê filter / pagination / channel đang dùng `useState` trong Ex_1.
 * Commit: `docs: list state to sync with url`
+* Kết quả khảo sát Ex_1:
+  * Ex_1 chưa có state filter / pagination. Channel của Forum đã nằm trên URL qua route param `forum/:forumId`.
+  * State form (`values`, `touched`) và state fetch (`messages`, `loading`, `error`) giữ nguyên, không đưa lên URL.
+* State mới sẽ lưu trên URL:
+
+| Trang | Search param | Default | Ý nghĩa |
+| :-- | :-- | :-- | :-- |
+| `/people` | `q` | `''` | Lọc danh sách ca sĩ theo tên |
+| `/forum/:forumId` | `page` | `1` | Trang hiện tại của danh sách tin nhắn |
 
 ### Task 1.2: Refactor sang `useSearchParams()`
 * Đọc giá trị từ URL (có default), ghi bằng `setSearchParams`. Không dùng `useEffect` để đồng bộ.
